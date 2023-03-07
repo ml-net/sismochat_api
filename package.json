@@ -1,0 +1,43 @@
+{
+  "name": "sismochat-api",
+  "version": "0.1.0",
+  "description": "A simple chat app, focused on Security, the target is childood. API for server side",
+  "main": "server.js",
+  "scripts": {
+    "start-dev": "nodemon server.js",
+    "start": "node server.js",
+    "migrate": "npx sequelize-cli db:migrate",
+    "migrate:reset": "npx sequelize-cli db:migrate:undo:all && npm run migrate",
+    "test": "cross-env NODE_ENV=test jest --testTimeout=10000 --detectOpenHandles",
+    "pretest": "cross-env NODE_ENV=test npm run migrate:reset"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "sequelize": "^6.28.0",
+    "sequelize-cli": "^6.6.0",
+    "sqlite3": "^5.1.4",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": "^16.x"
+  },
+  "repository": {
+    "url": "https://github.com/ml-net/sismochat_api"
+  },
+  "license": "None",
+  "keywords": [],
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3"
+  }
+}
