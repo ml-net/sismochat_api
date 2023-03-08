@@ -6,6 +6,10 @@ const jwt = require('jsonwebtoken');
 const util = require('./util.js');
 const cred = require('./APIcred.js');
 const {Op} = require("sequelize");
+const swaggerUi = require('swagger-ui-express')
+const swaggerFile = require('./swagger_output.json')
+
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
@@ -27,5 +31,7 @@ app.use('/api/connection/', require('./routes/connection.js'));
 
 // Devices' managemente Endpoint
 app.use('/api/device/', require('./routes/device.js'));
+
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 module.exports = app;

@@ -1,8 +1,7 @@
 {
   "development": {
     "dialect": "sqlite",
-    "storage": "./data/development_sqlite.db",
-    "logging": true
+    "storage": "./data/development_sqlite.db"
   },
   "test": {
     "dialect": "sqlite",

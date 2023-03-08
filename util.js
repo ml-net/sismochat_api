@@ -31,8 +31,9 @@ let util = {
     },
 
     parentExists: function (userid) {
-        let u = require('./models/index.js').parents.findByPk(userid);
-        return (u !== null);
+        return require('./models/index.js').parents.findByPk(userid).then(u => {
+            return (u !== null);
+        });
     },
 
     parentEmailExists: function (email) {
@@ -44,10 +45,10 @@ let util = {
     getUserByParent: function (parent) {
         return require('./models/index.js').users.findAll({where: {parent: parent}}).then(u => {
             let list = [];
-            for (let i = 0; i < u.length; i++) {
+            for (const element of u) {
                 let tmp = {
-                    id: u[i].dataValues.id,
-                    nick: u[i].dataValues.nick
+                    id: element.dataValues.id,
+                    nick: element.dataValues.nick
                 }
                 list.push(tmp);
             }

@@ -29,3 +29,13 @@ npx sequelize db:migrate
 ```
 
 Now, `npm start` execute the server, enjoy!
+
+## Testing
+
+There are a suite of tests, based on `Jest` / `supertest`; to launch the test type 
+
+``` 
+npm test 
+```
+
+A test DB instance will be created and tests will run on it.

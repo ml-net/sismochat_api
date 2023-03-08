@@ -44,7 +44,6 @@ let cred = {
     },
 
     verifyToken: function (req, res, next) {
-        //credenziali = requireUncached('./APIcredentials.json');
         const bearerHeader = req.headers['authorization'];
         if (typeof bearerHeader !== 'undefined') {
             const bearerToken = bearerHeader.split(' ')[1];

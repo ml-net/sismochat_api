@@ -110,7 +110,7 @@ router.get('/parent/:parentemail', cred.verifyToken, (req, res) => {
                             res.status(200).send(list);
                         });
                     } else {
-                        res.status(400).send('No parent found');
+                        res.status(404).send('No parent found');
                     }
                 });
             } else {
