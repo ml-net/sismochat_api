@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-
+const util = require('../util.js');
 const newParent = {
     email: 'me@me.com',
     pwd: "blablabla",
@@ -24,8 +24,9 @@ const newUserWithKey = {
 }
 
 let JWTtoken;
-let pk1, pk2;
+let pk1, pk2, pv1;
 let id1, id2;
+let deviceId1;
 
 describe('Parent endpoint', () => {
     it('Create a new parent', () => {
@@ -50,7 +51,7 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Get JWT Token by auth', () => {
+    it('Get JWT Token by parent auth', () => {
         return (
             request(app)
                 .post('/api/auth/parent')
@@ -115,6 +116,7 @@ describe('User endpoint', () => {
                     expect(response.body).toHaveProperty('ID');
                     expect(response.body).toHaveProperty('keys.private');
                     expect(response.body).toHaveProperty('keys.public');
+                    pv1 = response.body.keys.private;
                     pk1 = response.body.keys.public;
                     id1 = response.body.ID;
                 })
@@ -146,6 +148,7 @@ describe('User endpoint', () => {
                     expect(response.body).toHaveProperty('ID');
                     expect(response.body).toHaveProperty('keys.public');
                     pk2 = response.body.keys.public;
+                    expect(response.body.keys.public).toEqual(newUserWithKey.pk);
                     id2 = response.body.ID;
                 })
         );
@@ -177,7 +180,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .post('/api/super')
-                .send({email: "me@me.org", pwd: "blabla"})
+                .send({ email: "me@me.org", pwd: "blabla" })
                 .expect('Content-Type', /json/)
                 .expect(201)
                 .then((response) => {
@@ -195,6 +198,69 @@ describe('User endpoint', () => {
                 .expect(200)
                 .then((response) => {
                     expect(response.body).toEqual([]);
+                })
+        );
+    });
+
+    it('Failing getting user by ID with wrong token', () => {
+        return (
+            request(app)
+                .get('/api/user/' + id1)
+                .set('Authorization', 'Bearer ' + JWTtoken)
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
+    it('Failing getting user by ID withouth token', () => {
+        return (
+            request(app)
+                .get('/api/user/' + id1)
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
+    it('Failing create device and pair with existent user and no auth', () => {
+        return (
+            request(app)
+                .post('/api/device/' + id1)
+                .expect(401)
+        );
+    });
+
+    it('Creating device and pair with existent user', () => {
+        return (
+            request(app)
+                .post('/api/device/' + id1)
+                .set('Authorization', 'Bearer ' + JWTtoken)
+                .expect(201)
+                .then((response) => {
+                    deviceId1 = response.text
+                })
+        );
+    });
+
+    it('Creating device and pair with non existent user', () => {
+        return (
+            request(app)
+                .post('/api/device/asdfasdf')
+                .set('Authorization', 'Bearer ' + JWTtoken)
+                .expect(404)
+        );
+    });
+
+    it('Get JWT Token by user auth', () => {
+        let token = util.btoa(id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
+        return (
+            request(app)
+                .post('/api/auth/user')
+                .send({ token: token })
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .then((authResponse) => {
+                    expect(authResponse.body).toHaveProperty('token');
+                    JWTtoken = authResponse.body.token;
                 })
         );
     });

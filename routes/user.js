@@ -8,12 +8,11 @@ router.post('/', cred.verifyToken, (req, res) => {
         if (err) {
             res.status(401).send(err);
         } else {
-            let tokenData = JSON.parse(util.atob(req.token.split('.')[1]));
-            if (tokenData.profile == 'Parent') {
-                util.parentExists(tokenData.user).then(found => {
+            if (authData.profile == 'Parent') {
+                util.parentExists(authData.user).then(found => {
                     if (found) {
                         if (req.body.pk && req.body.pk != '') {
-                            require('../models/index.js').users.create({nick: req.body.nick, key: req.body.pk.replace(/\\n/g, '\n'), parent: tokenData.user}).then(user => {
+                            require('../models/index.js').users.create({nick: req.body.nick, key: req.body.pk.replace(/\\n/g, '\n'), parent: authData.user}).then(user => {
                                 res.setHeader('Content-Type', 'application/json');
                                 res.status(201).send({ID: user.id, keys: {public: req.body.pk}});
                             });
@@ -36,7 +35,7 @@ router.post('/', cred.verifyToken, (req, res) => {
                                     res.status(400).send(err);
                                 } else {
                                     let keys = {private: privateKey, public: publicKey};
-                                    require('../models/index.js').users.create({nick: req.body.nick, key: keys.public.replace(/\\n/g, '\n'), parent: tokenData.user}).then(user => {
+                                    require('../models/index.js').users.create({nick: req.body.nick, key: keys.public.replace(/\\n/g, '\n'), parent: authData.user}).then(user => {
                                         res.setHeader('Content-Type', 'application/json');
                                         res.status(201).send({ID: user.id, keys: keys});
                                     });
@@ -60,8 +59,7 @@ router.get('/:userid', cred.verifyToken, (req, res) => {
         if (err) {
             res.status(401).send(err);
         } else {
-            let tokenData = JSON.parse(util.atob(req.token.split('.')[1]));
-            if (tokenData.profile == 'User') {
+            if (authData.profile == 'User') {
                 require('../models/index.js').users.findByPk(req.params.userid).then(u => {
                     if (u !== null) {
                         res.status(200).send({id: req.params.userid, nick: u.nick, parent: u.parent, pubkey: u.key});
@@ -81,8 +79,7 @@ router.get('/pubkey/:userid', cred.verifyToken, (req, res) => {
         if (err) {
             res.status(401).send(err);
         } else {
-            let tokenData = JSON.parse(util.atob(req.token.split('.')[1]));
-            if (tokenData.profile == 'User') {
+            if (authData.profile == 'User') {
                 require('../models/index.js').users.findByPk(req.params.userid).then(u => {
                     if (u !== null) {
                         res.status(200).send({pubkey: u.key});
@@ -102,8 +99,7 @@ router.get('/parent/:parentemail', cred.verifyToken, (req, res) => {
         if (err) {
             res.status(401).send(err);
         } else {
-            let tokenData = JSON.parse(util.atob(req.token.split('.')[1]));
-            if (tokenData.profile == 'Parent') {
+            if (authData.profile == 'Parent') {
                 require('../models/index.js').parents.findOne({where: {email: req.params.parentemail}}).then(p => {
                     if (p !== null) {
                         util.getUserByParent(p.id).then(list => {

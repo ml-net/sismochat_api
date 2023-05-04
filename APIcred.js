@@ -15,21 +15,28 @@ let cred = {
     },
 
     userAuth: function (usertoken, cb) {
-        let userid = parseInt(util.atob(usertoken[0]));
+        let userid = util.atob(usertoken[0]);
         let deviceId = util.atob(usertoken[1]).trim();
         let encrDevice = usertoken[2].replace(/ /g, '+');
         db.users.findByPk(userid).then(u => {
             if (u !== null) {
+                console.log('userid: ' + userid);
+                console.log('deviceid: ' + deviceId);
+                console.log('encrdevice: ' + encrDevice);
                 let decryptDeviceId = util.pubDecode(encrDevice, u.key).replace('\n','');
+                console.log('decrypteddevide: ' + decryptDeviceId);
                 if (decryptDeviceId == deviceId) {
+                    console.log('ok')
                     db.devices.findOne({where: {userid: userid}}).then(d => {
+                        console.log(d)
                         if (d == null) {
                             // Associazione UserID <-> DeviceId non presente
                             cb({errCode: 7, errDesc: "User don't have DeviceId registered"});
                         } else {
-                            if (d.deviceid == deviceId) {
+                            if (d.id == deviceId) {
                                 cb({errCode: 0, jwt: {user: userid, nick: u.nick, profile: 'User'}});
                             } else {
+                                console.log(d.deviceId + ' ' + deviceId)
                                 cb({errCode: 8, errDesc: "Other DeviceID associated with user"});
                             }
                         }

@@ -15,8 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   devices.init({
-    deviceid: DataTypes.STRING,
-    userid: DataTypes.INTEGER
+    userid: DataTypes.UUID,
   }, {
     sequelize,
     modelName: 'devices',
