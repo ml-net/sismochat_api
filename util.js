@@ -17,6 +17,7 @@ let util = {
         const encrypted = require('crypto').privateEncrypt({key: privateKey, passphrase: ''}, Buffer.from(msg));
         let res = encrypted.toString("base64");
         //let res = require('crypto').privateEncrypt({key: key, passphrase: ''}, Buffer.from(msg, 'base64')).toString('base64');
+        require('fs').unlinkSync(hash);
         return res;
     },
 
@@ -26,8 +27,10 @@ let util = {
     },
 
     userExists: function (userid) {
-        let u = require('./models/index.js').users.findByPk(userid);
-        return (u !== null);
+        const models = require('./models/index.js');
+        models.users.findByPk(userid).then(u => {
+            return (u !== null);
+        });
     },
 
     parentExists: function (userid) {
