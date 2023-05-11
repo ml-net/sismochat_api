@@ -6,6 +6,8 @@ const newParent = {
     pwd: "blablabla",
 }
 
+const testMsg = 'The quick brown fox jumps over the lazy dog!';
+
 const newUserWithoutKey = {
     nick: 'mynick1'
 }
@@ -27,6 +29,7 @@ let JWTtokenParent, JWTTokenUser;
 let pk1, pk2, pv1;
 let id1, id2;
 let deviceId1;
+let msgId;
 
 describe('Parent endpoint', () => {
     it('Create a new parent', () => {
@@ -270,9 +273,25 @@ describe('User endpoint', () => {
             request(app)
                 .post('/api/message/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
-                .send({to: id2, message: util.privEncode('test message!', pv1)})
+                .send({to: id2, message: util.privEncode(testMsg, pv1)})
                 .expect('Content-Type', /json/)
                 .expect(201)
+                .then((content) => {
+                    msgId = content.body.messageID;
+                })
+        );
+    });
+
+    it('Retrieve message', () => {
+        return (
+            request(app)
+                .get('/api/message/' + msgId)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .then((content) => {
+                    expect(util.pubDecode(content.body.body, pk1)).toEqual(testMsg)
+                })
         );
     });
 

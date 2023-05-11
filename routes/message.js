@@ -39,21 +39,20 @@ router.get('/list/:msgStatus', cred.verifyToken, (req, res) => {
 });
 
 router.get("/:msgID", cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, (err, authData) => {
+    jwt.verify(req.token, cred.secret, (err, tokenData) => {
         if (err) {
             res.status(401).send(err);
         } else {
-            let tokenData = JSON.parse(util.atob(req.token.split('.')[1]));
             if (tokenData.profile == 'User') {
-                require('../models/index.js').messages.findOne({ where: { msgid: req.params.msgID } }).then(msg => {
+                require('../models/index.js').messages.findOne({ where: { id: req.params.msgID } }).then(msg => {
                     if (msg !== null) {
                         if (msg.from == tokenData.user || msg.to == tokenData.user) {
                             res.status(200).send(msg.dataValues);
                         } else {
-                            res.statu(400).send("Not YOUR message!")
+                            res.status(400).send({msg: "Not YOUR message!"})
                         }
                     } else {
-                        res.status(400).send("No msg found");
+                        res.status(404).send({msg: "No msg found"});
                     }
                 });
             } else {
@@ -65,21 +64,20 @@ router.get("/:msgID", cred.verifyToken, (req, res) => {
 
 
 router.put('/:msgID/:status', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, (err, authData) => {
+    jwt.verify(req.token, cred.secret, (err, tokenData) => {
         if (err) {
             res.status(401).send(err);
         } else {
-            let tokenData = JSON.parse(util.atob(req.token.split('.')[1]));
             if (tokenData.profile == 'User') {
                 require('../models/index.js').messages.findOne({ where: { msgid: req.params.msgID } }).then(msg => {
                     if (msg !== null) {
                         if (msg.from == tokenData.user || msg.to == tokenData.user) {
                             msg.update({ status: req.params.status }).then(res.sendStatus(204));
                         } else {
-                            res.status(400).send("Not YOUR message!")
+                            res.status(400).send({msg: "Not YOUR message!"})
                         }
                     } else {
-                        res.status(400).send('No msg found');
+                        res.status(404).send({msg: 'No msg found'});
                     }
                 });
             } else {
@@ -90,12 +88,12 @@ router.put('/:msgID/:status', cred.verifyToken, (req, res) => {
 });
 
 router.post('/', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, (err, authData) => {
+    jwt.verify(req.token, cred.secret, (err, tokenData) => {
         if (err) {
             res.status(401).send(err);
         } else {
-            if (authData.profile == 'User') {
-                let fromID = authData.user;
+            if (tokenData.profile == 'User') {
+                let fromID = tokenData.user;
                 let toID = req.body.to;
                 require('../models/index.js').users.findByPk(fromID).then(from => {
                     if (from !== null) {
