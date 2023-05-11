@@ -20,15 +20,15 @@ let cred = {
         let encrDevice = usertoken[2].replace(/ /g, '+');
         db.users.findByPk(userid).then(u => {
             if (u !== null) {
-                console.log('userid: ' + userid);
-                console.log('deviceid: ' + deviceId);
-                console.log('encrdevice: ' + encrDevice);
+//                console.log('userid: ' + userid);
+//                console.log('deviceid: ' + deviceId);
+//                console.log('encrdevice: ' + encrDevice);
                 let decryptDeviceId = util.pubDecode(encrDevice, u.key).replace('\n','');
-                console.log('decrypteddevide: ' + decryptDeviceId);
+//                console.log('decrypteddevide: ' + decryptDeviceId);
                 if (decryptDeviceId == deviceId) {
-                    console.log('ok')
+//                    console.log('ok')
                     db.devices.findOne({where: {userid: userid}}).then(d => {
-                        console.log(d)
+//                        console.log(d)
                         if (d == null) {
                             // Associazione UserID <-> DeviceId non presente
                             cb({errCode: 7, errDesc: "User don't have DeviceId registered"});

@@ -13,10 +13,8 @@ let util = {
         let hash = require('crypto').createHash('md5').update(msg).digest('hex');
         require('fs').writeFileSync(hash, key);
         const privateKey = require('fs').readFileSync(hash, "utf8");
-        // privateEncrypt() method with its parameters
         const encrypted = require('crypto').privateEncrypt({key: privateKey, passphrase: ''}, Buffer.from(msg));
         let res = encrypted.toString("base64");
-        //let res = require('crypto').privateEncrypt({key: key, passphrase: ''}, Buffer.from(msg, 'base64')).toString('base64');
         require('fs').unlinkSync(hash);
         return res;
     },

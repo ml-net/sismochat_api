@@ -23,7 +23,7 @@ const newUserWithKey = {
         '-----END PUBLIC KEY-----\n'
 }
 
-let JWTtoken;
+let JWTtokenParent, JWTTokenUser;
 let pk1, pk2, pv1;
 let id1, id2;
 let deviceId1;
@@ -60,7 +60,7 @@ describe('Parent endpoint', () => {
                 .expect(200)
                 .then((authResponse) => {
                     expect(authResponse.body).toHaveProperty('token');
-                    JWTtoken = authResponse.body.token;
+                    JWTtokenParent = authResponse.body.token;
 
 
                 })
@@ -72,7 +72,7 @@ describe('Parent endpoint', () => {
             request(app)
 
                 .get('/api/super/' + newParent.email)
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((response) => {
@@ -108,7 +108,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .post('/api/user/')
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send(newUserWithoutKey)
                 .expect('Content-Type', /json/)
                 .expect(201)
@@ -127,7 +127,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.com')
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((response) => {
@@ -140,7 +140,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .post('/api/user/')
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send(newUserWithKey)
                 .expect('Content-Type', /json/)
                 .expect(201)
@@ -158,7 +158,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.com')
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((response) => {
@@ -171,7 +171,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.org')
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(404)
         );
     });
@@ -193,7 +193,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.org')
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((response) => {
@@ -206,7 +206,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .get('/api/user/' + id1)
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(401)
         );
@@ -233,7 +233,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .post('/api/device/' + id1)
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(201)
                 .then((response) => {
                     deviceId1 = response.text
@@ -245,7 +245,7 @@ describe('User endpoint', () => {
         return (
             request(app)
                 .post('/api/device/asdfasdf')
-                .set('Authorization', 'Bearer ' + JWTtoken)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(404)
         );
     });
@@ -260,8 +260,19 @@ describe('User endpoint', () => {
                 .expect(200)
                 .then((authResponse) => {
                     expect(authResponse.body).toHaveProperty('token');
-                    JWTtoken = authResponse.body.token;
+                    JWTTokenUser = authResponse.body.token;
                 })
+        );
+    });
+
+    it('Send message', () => {
+        return (
+            request(app)
+                .post('/api/message/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .send({to: id2, message: util.privEncode('test message!', pv1)})
+                .expect('Content-Type', /json/)
+                .expect(201)
         );
     });
 
