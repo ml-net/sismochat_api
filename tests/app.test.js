@@ -12,23 +12,27 @@ const newUserWithoutKey = {
     nick: 'mynick1'
 }
 
+const newUserWithoutKey2 = {
+    nick: 'mynick1'
+}
+
 const newUserWithKey = {
     nick: 'mynick2',
     pk: '-----BEGIN PUBLIC KEY-----\n' +
-        'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA28DLojvHlUZN6heEF4dc\n' +
-        'sOAVcj4f5ULZa8O7l+aAahzEXvIll/CWoNIy0OliYzkBtnqPt3cl2q2sTBrJ6DbN\n' +
-        'CRDlrSjIwXQsu/nXK4A/6uS7wlL3ajGpxtwdgfaU/gOTiyFRLRI+oCaObw6VhuHS\n' +
-        'ksBmG0iYNxe2ygq0bQrn2iZFi0FlimEvn8FvK1+KUOMtrhei73Gl4eB2wiZknaw6\n' +
-        '7Krd/wEvllMBNot+vE7S0vjm65W8OShfUPQW5Umoefv1SBrvgkxWiQ6G+p9zbcud\n' +
-        'VA+QcWkRxPPn78jhNtex6Cir4swIiwqSuNN3FGPsJogaZjZo8e1Our6F8ggSdfMB\n' +
-        '2wIDAQAB\n' +
+        'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7rE907tEU0tBkxsC44Dy\n' +
+        '6wsmoMwRs0k8NHkU6tDr6Oje1NYHEQe0YLN22OXnqYZmpzwkbH9cgkcufjalSRX7\n' +
+        'odCqLM14UrBJenqZ03iXq0Kqhf2h3L6C6VpOlaqqnN1BibTTA3aI5W0VnDgAQxPB\n' +
+        'WSbfJN543tj6rBgsMzJyJMPvNREVaBvkdeUVb3qBJVw6quoLJ7mTwZE+6fuoYHl5\n' +
+        'pBVmT9ixHWhXM8UnV2eBg8/z2ogpvZq2amgiapV3WsHH5OXOP9TO3zg73FstlhRE\n' +
+        'VaFnhx+YqbVFcUnYn9/8YvtsFJcXw2rdiNRbE2h2Iy39MA9GJEH8MEHHKrOXqOot\n' +
+        '1QIDAQAB\n' +
         '-----END PUBLIC KEY-----\n'
 }
 
-let JWTtokenParent, JWTTokenUser;
-let pk1, pk2, pv1;
+let JWTtokenParent, JWTTokenUser, JWTTokenUser2;
+let pk1, pv1, pk2, pv2;
 let id1, id2;
-let deviceId1;
+let deviceId1, deviceId2;
 let msgId;
 
 describe('Parent endpoint', () => {
@@ -64,9 +68,43 @@ describe('Parent endpoint', () => {
                 .then((authResponse) => {
                     expect(authResponse.body).toHaveProperty('token');
                     JWTtokenParent = authResponse.body.token;
-
-
                 })
+        );
+    });
+
+    it('Failing parent auth - missing credentials', () => {
+        return (
+            request(app)
+                .post('/api/auth/parent')
+                .send({
+                    email: 'me@me.com'
+                })
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
+    it('Failing parent auth - invalid credentials', () => {
+        return (
+            request(app)
+                .post('/api/auth/parent')
+                .send({
+                    email: 'me@me.com', pwd: "pippo"
+                })
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
+    it('Failing parent auth - user does not exists', () => {
+        return (
+            request(app)
+                .post('/api/auth/parent')
+                .send({
+                    email: 'me@meme.com', pwd: "pippo"
+                })
+                .expect('Content-Type', /json/)
+                .expect(401)
         );
     });
 
@@ -107,7 +145,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Create user not sending keys', () => {
+    it('Create user not sending keys #1', () => {
         return (
             request(app)
                 .post('/api/user/')
@@ -122,6 +160,25 @@ describe('User endpoint', () => {
                     pv1 = response.body.keys.private;
                     pk1 = response.body.keys.public;
                     id1 = response.body.ID;
+                })
+        );
+    });
+
+    it('Create user not sending keys #2', () => {
+        return (
+            request(app)
+                .post('/api/user/')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send(newUserWithoutKey2)
+                .expect('Content-Type', /json/)
+                .expect(201)
+                .then((response) => {
+                    expect(response.body).toHaveProperty('ID');
+                    expect(response.body).toHaveProperty('keys.private');
+                    expect(response.body).toHaveProperty('keys.public');
+                    pv2 = response.body.keys.private;
+                    pk2 = response.body.keys.public;
+                    id2 = response.body.ID;
                 })
         );
     });
@@ -150,9 +207,7 @@ describe('User endpoint', () => {
                 .then((response) => {
                     expect(response.body).toHaveProperty('ID');
                     expect(response.body).toHaveProperty('keys.public');
-                    pk2 = response.body.keys.public;
                     expect(response.body.keys.public).toEqual(newUserWithKey.pk);
-                    id2 = response.body.ID;
                 })
         );
     });
@@ -165,7 +220,7 @@ describe('User endpoint', () => {
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((response) => {
-                    expect(response.body).toEqual(expect.arrayContaining([{ id: id1, nick: newUserWithoutKey.nick }, { id: id2, nick: newUserWithKey.nick }]));
+                    expect(response.body).toEqual(expect.arrayContaining([{ id: id1, nick: newUserWithoutKey.nick }, { id: id2, nick: newUserWithoutKey2.nick }]));
                 })
         );
     });
@@ -232,7 +287,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Creating device and pair with existent user', () => {
+    it('Creating device and pair with existent user #1', () => {
         return (
             request(app)
                 .post('/api/device/' + id1)
@@ -244,7 +299,19 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Creating device and pair with non existent user', () => {
+    it('Creating device and pair with existent user #2', () => {
+        return (
+            request(app)
+                .post('/api/device/' + id2)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(201)
+                .then((response) => {
+                    deviceId2 = response.text
+                })
+        );
+    });
+
+    it('Failing creating device and pair with non existent user', () => {
         return (
             request(app)
                 .post('/api/device/asdfasdf')
@@ -253,7 +320,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Get JWT Token by user auth', () => {
+    it('Get JWT Token by user auth #1', () => {
         let token = util.btoa(id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
         return (
             request(app)
@@ -268,12 +335,58 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Send message', () => {
+    it('Get JWT Token by user auth #2', () => {
+        let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv2);
+        return (
+            request(app)
+                .post('/api/auth/user')
+                .send({ token: token })
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .then((authResponse) => {
+                    expect(authResponse.body).toHaveProperty('token');
+                    JWTTokenUser2 = authResponse.body.token;
+                })
+        );
+    });
+
+    it('Failing user auth - user unknown', () => {
+        let token = util.btoa('s' + id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
+        return (
+            request(app)
+                .post('/api/auth/user')
+                .send({ token: token })
+                .expect('Content-Type', /json/)
+                .expect(401)
+                .then((authResponse) => {
+                    expect(authResponse.body.errDesc).toEqual('User unknown');
+                })
+        );
+    });
+
+    it('Failing user auth - invalid token', () => {
+        let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId1, pv2);
+        return (
+            request(app)
+                .post('/api/auth/user')
+                .send({ token: token })
+                .expect('Content-Type', /json/)
+                .expect(401)
+                .then((authResponse) => {
+                    expect(authResponse.body.errDesc).toEqual('Token not valid');
+                })
+        );
+    });
+
+});
+
+describe('Message endpoint', () => {
+    it('Sending message', () => {
         return (
             request(app)
                 .post('/api/message/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
-                .send({to: id2, message: util.privEncode(testMsg, pv1)})
+                .send({ to: id1, message: util.privEncode(testMsg, pv1) })
                 .expect('Content-Type', /json/)
                 .expect(201)
                 .then((content) => {
@@ -282,7 +395,28 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Retrieve message', () => {
+    it('Failing sending message without auth', () => {
+        return (
+            request(app)
+                .post('/api/message/')
+                .send({ to: id2, message: util.privEncode(testMsg, pv1) })
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
+    it('Failing sending message to non-existent user', () => {
+        return (
+            request(app)
+                .post('/api/message/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .send({ to: 'nouser', message: util.privEncode(testMsg, pv1) })
+                .expect('Content-Type', /json/)
+                .expect(404)
+        );
+    });
+
+    it('Retrieving message', () => {
         return (
             request(app)
                 .get('/api/message/' + msgId)
@@ -292,6 +426,45 @@ describe('User endpoint', () => {
                 .then((content) => {
                     expect(util.pubDecode(content.body.body, pk1)).toEqual(testMsg)
                 })
+        );
+    });
+
+    it('Failing getting non existent message', () => {
+        return (
+            request(app)
+                .get('/api/message/nonexists')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect('Content-Type', /json/)
+                .expect(404)
+        );
+    });
+
+    it('Failing getting message without token', () => {
+        return (
+            request(app)
+                .get('/api/message/' + msgId)
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
+    it('Failing getting message with invalid token', () => {
+        return (
+            request(app)
+                .get('/api/message/' + msgId)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
+    it('Failing getting message - NOT YOUR MESSAGE (No sender, no receiver)', () => {
+        return (
+            request(app)
+                .get('/api/message/' + msgId)
+                .set('Authorization', 'Bearer ' + JWTTokenUser2)
+                .expect('Content-Type', /json/)
+                .expect(400)
         );
     });
 

@@ -10,12 +10,11 @@ const MESS = {
 };
 
 router.get('/list/:msgStatus', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, (err, authData) => {
+    jwt.verify(req.token, cred.secret, (err, tokenData) => {
         if (err) {
             console.log(err);
             res.status(401).send(err);
         } else {
-            let tokenData = JSON.parse(util.atob(req.token.split('.')[1]));
             if (tokenData.profile == 'User') {
                 if (util.userExists(tokenData.user)) {
                     let mList = [];
