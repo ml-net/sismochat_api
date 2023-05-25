@@ -391,6 +391,7 @@ describe('Message endpoint', () => {
                 .expect(201)
                 .then((content) => {
                     msgId = content.body.messageID;
+                    console.log(msgId)
                 })
         );
     });
@@ -465,6 +466,57 @@ describe('Message endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect('Content-Type', /json/)
                 .expect(400)
+        );
+    });
+
+    it('Getting unread message list', () => {
+        return (
+            request(app)
+                .get('/api/message/list/' + util.MESS.UNREAD)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(1)
+                })
+        );
+    });
+
+    it('Failing getting read message list', () => {
+        return (
+            request(app)
+                .get('/api/message/list/' + util.MESS.READ)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(404)
+        );
+    });
+
+    it('Marking message as READ', () => {
+        return (
+            request(app)
+                .put('/api/message/' + msgId + '/' + util.MESS.READ)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(204)
+        );
+    });
+
+    it('Failing getting unread message list now empty', () => {
+        return (
+            request(app)
+                .get('/api/message/list/' + util.MESS.UNREAD)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(404)
+        );
+    });
+
+    it('Getting read message list', () => {
+        return (
+            request(app)
+                .get('/api/message/list/' + util.MESS.READ)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(1)
+                })
         );
     });
 

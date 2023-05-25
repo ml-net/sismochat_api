@@ -1,4 +1,11 @@
 let util = {
+
+    // MESSAGE STATUS
+    MESS : {
+        UNREAD: 0,
+        READ: 1
+    },
+
     pubEncode: function (msg, key) {
         let res = require('crypto').publicEncrypt(key, Buffer.from(msg, 'base64')).toString('base64');
         return res;
@@ -13,7 +20,7 @@ let util = {
         let hash = require('crypto').createHash('md5').update(msg).digest('hex');
         require('fs').writeFileSync(hash, key);
         const privateKey = require('fs').readFileSync(hash, "utf8");
-        const encrypted = require('crypto').privateEncrypt({key: privateKey, passphrase: ''}, Buffer.from(msg));
+        const encrypted = require('crypto').privateEncrypt({ key: privateKey, passphrase: '' }, Buffer.from(msg));
         let res = encrypted.toString("base64");
         require('fs').unlinkSync(hash);
         return res;
@@ -38,13 +45,13 @@ let util = {
     },
 
     parentEmailExists: function (email) {
-        return require('./models/index.js').parents.findOne({where: {email: email}}).then(u => {
+        return require('./models/index.js').parents.findOne({ where: { email: email } }).then(u => {
             return (u !== null);
         });
     },
 
     getUserByParent: function (parent) {
-        return require('./models/index.js').users.findAll({where: {parent: parent}}).then(u => {
+        return require('./models/index.js').users.findAll({ where: { parent: parent } }).then(u => {
             let list = [];
             for (const element of u) {
                 let tmp = {
