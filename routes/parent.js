@@ -12,7 +12,7 @@ router.post('/', (req, res) => {
                 res.status(201).send({ID: parent.id});
             });
         } else {
-            res.status(401).send({errCode: 2, errDesc: "Exists an User with this email"});
+            res.status(404).send({errCode: 2, errDesc: "Exists an User with this email"});
         }
     });
 });
@@ -26,7 +26,7 @@ router.get('/:email', cred.verifyToken, (req, res) => {
                 if (u !== null) {
                     res.status(200).send({parentID: u.id, email: u.email});
                 } else {
-                    res.status(400).send('No parent found');
+                    res.status(404).send('No parent found');
                 }
             });
         }

@@ -36,6 +36,7 @@ let deviceId1, deviceId2;
 let msgId;
 
 describe('Parent endpoint', () => {
+
     it('Create a new parent', () => {
         return (
             request(app)
@@ -46,6 +47,16 @@ describe('Parent endpoint', () => {
                 .then((response) => {
                     expect(response.body).toHaveProperty('ID');
                 })
+        );
+    });
+
+    it('Failing create a parent with existing email', () => {
+        return (
+            request(app)
+                .post('/api/super')
+                .send(newParent)
+                .expect('Content-Type', /json/)
+                .expect(404)
         );
     });
 
@@ -111,7 +122,6 @@ describe('Parent endpoint', () => {
     it('Get parent by email', () => {
         return (
             request(app)
-
                 .get('/api/super/' + newParent.email)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
@@ -120,6 +130,24 @@ describe('Parent endpoint', () => {
                     expect(response.body).toHaveProperty('email');
                     expect(response.body.email).toEqual(newParent.email);
                 })
+        );
+    });
+
+    it('Failing get parent by email without auth', () => {
+        return (
+            request(app)
+                .get('/api/super/' + newParent.email)
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
+    it('Failing get parent by not existent email', () => {
+        return (
+            request(app)
+                .get('/api/super/nobody@no.me')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(404)
         );
     });
 
@@ -378,6 +406,33 @@ describe('User endpoint', () => {
         );
     });
 
+    it('Failing deleting device without auth', () => {
+        return (
+            request(app)
+                .delete('/api/device/' + id2)
+                .expect(401)
+        );
+    });
+
+    it('Deleting device', () => {
+        return (
+            request(app)
+                .delete('/api/device/' + id2)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(204)
+        );
+    });
+
+    it('Deleting device', () => {
+        return (
+            request(app)
+                .delete('/api/device/' + id2)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(204)
+        );
+    });
+
+
 });
 
 describe('Message endpoint', () => {
@@ -391,7 +446,6 @@ describe('Message endpoint', () => {
                 .expect(201)
                 .then((content) => {
                     msgId = content.body.messageID;
-                    console.log(msgId)
                 })
         );
     });
@@ -472,7 +526,7 @@ describe('Message endpoint', () => {
     it('Getting unread message list', () => {
         return (
             request(app)
-                .get('/api/message/list/' + util.MESS.UNREAD)
+                .get('/api/message/list/' + util.MessageStatus.UNREAD)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
@@ -484,7 +538,7 @@ describe('Message endpoint', () => {
     it('Failing getting read message list', () => {
         return (
             request(app)
-                .get('/api/message/list/' + util.MESS.READ)
+                .get('/api/message/list/' + util.MessageStatus.READ)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(404)
         );
@@ -493,7 +547,7 @@ describe('Message endpoint', () => {
     it('Marking message as READ', () => {
         return (
             request(app)
-                .put('/api/message/' + msgId + '/' + util.MESS.READ)
+                .put('/api/message/' + msgId + '/' + util.MessageStatus.READ)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(204)
         );
@@ -502,7 +556,7 @@ describe('Message endpoint', () => {
     it('Failing getting unread message list now empty', () => {
         return (
             request(app)
-                .get('/api/message/list/' + util.MESS.UNREAD)
+                .get('/api/message/list/' + util.MessageStatus.UNREAD)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(404)
         );
@@ -511,7 +565,7 @@ describe('Message endpoint', () => {
     it('Getting read message list', () => {
         return (
             request(app)
-                .get('/api/message/list/' + util.MESS.READ)
+                .get('/api/message/list/' + util.MessageStatus.READ)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {

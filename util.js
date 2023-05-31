@@ -1,9 +1,16 @@
 let util = {
 
     // MESSAGE STATUS
-    MESS : {
+    MessageStatus : {
         UNREAD: 0,
         READ: 1
+    },
+
+    // CONNECTION STATUS
+    ConnectionStatus : {
+    ACCEPTED: 0,
+    REQUESTED: 1,
+    REJECTED: 2
     },
 
     pubEncode: function (msg, key) {
@@ -32,8 +39,7 @@ let util = {
     },
 
     userExists: function (userid) {
-        const models = require('./models/index.js');
-        models.users.findByPk(userid).then(u => {
+        return require('./models/index.js').users.findByPk(userid).then(u => {
             return (u !== null);
         });
     },
