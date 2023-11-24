@@ -9,7 +9,7 @@ router.post('/parent', (req, res) => {
     } else {
         util.parentEmailExists(req.body.email).then(found => {
             if (!found) {
-                res.status(401).send({ errCode: 3, errDesc: "User unknown" });
+                res.status(404).send({ errCode: 3, errDesc: "User unknown" });
             } else {
                 cred.parentAuth(req.body.email, require('crypto').createHash('md5').update(req.body.pwd).digest("hex"), (data) => {
                     switch (data.esito) {

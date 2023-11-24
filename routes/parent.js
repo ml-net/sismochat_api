@@ -12,7 +12,7 @@ router.post('/', (req, res) => {
                 res.status(201).send({ID: parent.id});
             });
         } else {
-            res.status(404).send({errCode: 2, errDesc: "Exists an User with this email"});
+            res.status(400).send({errCode: 2, errDesc: "Exists an User with this email"});
         }
     });
 });

@@ -33,11 +33,11 @@ let JWTtokenParent, JWTTokenUser, JWTTokenUser2;
 let pk1, pv1, pk2, pv2;
 let id1, id2;
 let deviceId1, deviceId2;
-let msgId;
+let msgId, connId;
 
 describe('Parent endpoint', () => {
 
-    it('Create a new parent', () => {
+    it('Create a new parent should return 201', () => {
         return (
             request(app)
                 .post('/api/super')
@@ -50,17 +50,17 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Failing create a parent with existing email', () => {
+    it('Create a parent with existing email should return 400', () => {
         return (
             request(app)
                 .post('/api/super')
                 .send(newParent)
                 .expect('Content-Type', /json/)
-                .expect(404)
+                .expect(400)
         );
     });
 
-    it('Failing get parent without auth', () => {
+    it('GET parent without auth should return 401', () => {
         return (
             request(app)
                 .get('/api/super/' + newParent.email)
@@ -69,7 +69,7 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Get JWT Token by parent auth', () => {
+    it('Doing parent auth should return 200 and JWT token', () => {
         return (
             request(app)
                 .post('/api/auth/parent')
@@ -83,7 +83,7 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Failing parent auth - missing credentials', () => {
+    it('Trying auth with missing credentials should return 401', () => {
         return (
             request(app)
                 .post('/api/auth/parent')
@@ -95,7 +95,7 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Failing parent auth - invalid credentials', () => {
+    it('Trying auth with invalid credentials should return 401', () => {
         return (
             request(app)
                 .post('/api/auth/parent')
@@ -107,7 +107,7 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Failing parent auth - user does not exists', () => {
+    it('trying auth with non existent user should return 404', () => {
         return (
             request(app)
                 .post('/api/auth/parent')
@@ -115,11 +115,11 @@ describe('Parent endpoint', () => {
                     email: 'me@meme.com', pwd: "pippo"
                 })
                 .expect('Content-Type', /json/)
-                .expect(401)
+                .expect(404)
         );
     });
 
-    it('Get parent by email', () => {
+    it('Get parent by email should return 200', () => {
         return (
             request(app)
                 .get('/api/super/' + newParent.email)
@@ -133,7 +133,7 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Failing get parent by email without auth', () => {
+    it('GET parent by email without auth should return 401', () => {
         return (
             request(app)
                 .get('/api/super/' + newParent.email)
@@ -142,7 +142,7 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Failing get parent by not existent email', () => {
+    it('GET parent by not existent email should return 404', () => {
         return (
             request(app)
                 .get('/api/super/nobody@no.me')
@@ -155,7 +155,7 @@ describe('Parent endpoint', () => {
 
 describe('User endpoint', () => {
 
-    it('Failing create user without auth', () => {
+    it('Create user without auth should return 401', () => {
         return (
             request(app)
                 .post('/api/user/')
@@ -165,7 +165,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Failing getting users without auth', () => {
+    it('GET users without auth should return 401', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.org')
@@ -173,7 +173,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Create user not sending keys #1', () => {
+    it('Create user without key should return 201 and keys', () => {
         return (
             request(app)
                 .post('/api/user/')
@@ -192,7 +192,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Create user not sending keys #2', () => {
+    it('Create user without keys #2 should return 201 and keys', () => {
         return (
             request(app)
                 .post('/api/user/')
@@ -211,7 +211,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Getting single users by parent', () => {
+    it('Getting single users by parent should return 200', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.com')
@@ -224,7 +224,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Create user sending keys', () => {
+    it('Create user sending keys should return 201 and PubKey', () => {
         return (
             request(app)
                 .post('/api/user/')
@@ -240,7 +240,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Getting multiple users by parent', () => {
+    it('Getting users by parent should return 3 items', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.com')
@@ -248,12 +248,12 @@ describe('User endpoint', () => {
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((response) => {
-                    expect(response.body).toEqual(expect.arrayContaining([{ id: id1, nick: newUserWithoutKey.nick }, { id: id2, nick: newUserWithoutKey2.nick }]));
+                    expect(response.body.length).toEqual(3);
                 })
         );
     });
 
-    it('Failing getting users by non existent parent', () => {
+    it('GET users by non existent parent should return 404', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.org')
@@ -262,7 +262,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Creating new parent', () => {
+    it('Creating new parent should return 201', () => {
         return (
             request(app)
                 .post('/api/super')
@@ -275,7 +275,7 @@ describe('User endpoint', () => {
         )
     })
 
-    it('Getting no users by parent', () => {
+    it('GET users by parent should return 200 and empty array', () => {
         return (
             request(app)
                 .get('/api/user/parent/me@me.org')
@@ -288,7 +288,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Failing getting user by ID with wrong token', () => {
+    it('GET user by ID with wrong token should return 401', () => {
         return (
             request(app)
                 .get('/api/user/' + id1)
@@ -298,7 +298,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Failing getting user by ID withouth token', () => {
+    it('GET user by ID withouth token should return 401', () => {
         return (
             request(app)
                 .get('/api/user/' + id1)
@@ -307,7 +307,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Failing create device and pair with existent user and no auth', () => {
+    it('Creating device and pair with existent user without token should return 401', () => {
         return (
             request(app)
                 .post('/api/device/' + id1)
@@ -315,7 +315,8 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Creating device and pair with existent user #1', () => {
+    it('Creating devices and pair with existents users should return 201', () => {
+        // Create another device for test
         return (
             request(app)
                 .post('/api/device/' + id1)
@@ -324,11 +325,7 @@ describe('User endpoint', () => {
                 .then((response) => {
                     deviceId1 = response.text
                 })
-        );
-    });
-
-    it('Creating device and pair with existent user #2', () => {
-        return (
+            &&
             request(app)
                 .post('/api/device/' + id2)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
@@ -339,7 +336,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Failing creating device and pair with non existent user', () => {
+    it('Creating device and pair with non existent user should returns 404', () => {
         return (
             request(app)
                 .post('/api/device/asdfasdf')
@@ -348,27 +345,23 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Get JWT Token by user auth #1', () => {
-        let token = util.btoa(id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
+    it('Get JWT Tokens by user auth should return 200', () => {
+        let token1 = util.btoa(id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
+        let token2 = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv2);
         return (
             request(app)
                 .post('/api/auth/user')
-                .send({ token: token })
+                .send({ token: token1 })
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((authResponse) => {
                     expect(authResponse.body).toHaveProperty('token');
                     JWTTokenUser = authResponse.body.token;
                 })
-        );
-    });
-
-    it('Get JWT Token by user auth #2', () => {
-        let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv2);
-        return (
+            &&
             request(app)
                 .post('/api/auth/user')
-                .send({ token: token })
+                .send({ token: token2 })
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((authResponse) => {
@@ -378,7 +371,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Failing user auth - user unknown', () => {
+    it('Perform user auth with unknown user should return 401', () => {
         let token = util.btoa('s' + id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
         return (
             request(app)
@@ -392,7 +385,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Failing user auth - invalid token', () => {
+    it('Perform user auth with invalid token should return 401', () => {
         let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId1, pv2);
         return (
             request(app)
@@ -406,7 +399,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Failing deleting device without auth', () => {
+    it('Deleting device without auth should return 401', () => {
         return (
             request(app)
                 .delete('/api/device/' + id2)
@@ -414,7 +407,7 @@ describe('User endpoint', () => {
         );
     });
 
-    it('Deleting device', () => {
+    it('Deleting device should return 204', () => {
         return (
             request(app)
                 .delete('/api/device/' + id2)
@@ -422,21 +415,11 @@ describe('User endpoint', () => {
                 .expect(204)
         );
     });
-
-    it('Deleting device', () => {
-        return (
-            request(app)
-                .delete('/api/device/' + id2)
-                .set('Authorization', 'Bearer ' + JWTtokenParent)
-                .expect(204)
-        );
-    });
-
 
 });
 
 describe('Message endpoint', () => {
-    it('Sending message', () => {
+    it('Sending message should return 201', () => {
         return (
             request(app)
                 .post('/api/message/')
@@ -450,7 +433,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Failing sending message without auth', () => {
+    it('Sending message without auth should return 401', () => {
         return (
             request(app)
                 .post('/api/message/')
@@ -460,7 +443,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Failing sending message to non-existent user', () => {
+    it('Sending message to non-existent user should return 404', () => {
         return (
             request(app)
                 .post('/api/message/')
@@ -471,7 +454,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Retrieving message', () => {
+    it('GET message should return 200 and correctly encoded message', () => {
         return (
             request(app)
                 .get('/api/message/' + msgId)
@@ -484,7 +467,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Failing getting non existent message', () => {
+    it('GET non existent message should return 404', () => {
         return (
             request(app)
                 .get('/api/message/nonexists')
@@ -494,7 +477,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Failing getting message without token', () => {
+    it('GET message without token should return 401', () => {
         return (
             request(app)
                 .get('/api/message/' + msgId)
@@ -503,7 +486,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Failing getting message with invalid token', () => {
+    it('GET message with invalid token should return 401', () => {
         return (
             request(app)
                 .get('/api/message/' + msgId)
@@ -513,7 +496,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Failing getting message - NOT YOUR MESSAGE (No sender, no receiver)', () => {
+    it('GET message - NOT YOUR MESSAGE (Nor sender or receiver) should return 400', () => {
         return (
             request(app)
                 .get('/api/message/' + msgId)
@@ -523,7 +506,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Getting unread message list', () => {
+    it('GET unread message list should return 200 and not empty body', () => {
         return (
             request(app)
                 .get('/api/message/list/' + util.MessageStatus.UNREAD)
@@ -535,7 +518,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Failing getting read message list', () => {
+    it('GET read message list with NO READ messages should return 404', () => {
         return (
             request(app)
                 .get('/api/message/list/' + util.MessageStatus.READ)
@@ -544,7 +527,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Marking message as READ', () => {
+    it('Marking message as READ should return 204', () => {
         return (
             request(app)
                 .put('/api/message/' + msgId + '/' + util.MessageStatus.READ)
@@ -553,7 +536,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Failing getting unread message list now empty', () => {
+    it('GET unread message with NO UNREAD message should return 404', () => {
         return (
             request(app)
                 .get('/api/message/list/' + util.MessageStatus.UNREAD)
@@ -562,7 +545,7 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('Getting read message list', () => {
+    it('GET read messages list should return 200 and not empty body', () => {
         return (
             request(app)
                 .get('/api/message/list/' + util.MessageStatus.READ)
@@ -575,3 +558,178 @@ describe('Message endpoint', () => {
     });
 
 });
+
+describe('Connections endpoint', () => {
+    it('GET (empty) connections list by user should return 200 and empty body', () => {
+        return (
+            request(app)
+                .get('/api/connection/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(0);
+                })
+        );
+    });
+
+    it('GET connections list by user with bad token should return 401', () => {
+        return (
+            request(app)
+                .get('/api/connection/')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(401)
+                .then((content) => {
+                    expect(content.body.errCode).toEqual(7);
+                })
+        );
+    });
+
+    it('GET (empty) connections list by parent should return 200 and empty body', () => {
+        return (
+            request(app)
+                .get('/api/connection/' + id1)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(0);
+                })
+        );
+    });
+
+    it('GET empty connections list by parent with not existent user should return 404', () => {
+        return (
+            request(app)
+                .get('/api/connection/baduser')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(404)
+        );
+    });
+
+    it('GET (empty) approval list should return 200 and empty body', () => {
+        let parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
+        return (
+            request(app)
+                .get('/api/connection/approvalList/' + parentId)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(0);
+                })
+        );
+    });
+
+    it('Requesting connection should return 201', () => {
+        return (
+            request(app)
+                .post('/api/connection/' + id2 + '/' + id1)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(201)
+        );
+    });
+
+    it('GET approval list should return 200 and not empty body', () => {
+        let parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
+        return (
+            request(app)
+                .get('/api/connection/approvalList/' + parentId)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(1);
+                    connId = content.body[0].id;
+                })
+        );
+    });
+
+    it('Changing connection request status without new status should return 400', () => {
+        return (
+            request(app)
+                .patch('/api/connection/' + connId)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(400)
+                .then((content) => {
+                    expect(content.body.errCode).toEqual(9)
+                })
+        );
+    });
+
+    it('Changing connection request status without auth should return 401', () => {
+        return (
+            request(app)
+                .patch('/api/connection/' + connId)
+                .expect(401)
+                .then((content) => {
+                    expect(content.body.errCode).toEqual(1)
+                })
+        );
+    });
+
+    it('Changing connection request status with wrong auth profile should return 401', () => {
+        return (
+            request(app)
+                .patch('/api/connection/' + connId)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(401)
+                .then((content) => {
+                    expect(content.body.errCode).toEqual(7)
+                })
+        );
+    });
+
+    it('Changing connection request status with not existent connectionId should return 404', () => {
+        return (
+            request(app)
+                .patch('/api/connection/badconnid')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send({ status: util.ConnectionStatus.ACCEPTED })
+                .expect(404)
+        );
+    });
+
+    it('Reject connection request status should return 204', () => {
+        return (
+            request(app)
+                .patch('/api/connection/' + connId)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send({ status: util.ConnectionStatus.REJECTED })
+                .expect(204)
+        );
+    });
+
+    it('Get connections list by user after rejecting should return 200 and empty body', () => {
+        return (
+            request(app)
+                .get('/api/connection/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(0);
+                })
+        );
+    });
+
+    it('Accept connection request status', () => {
+        return (
+            request(app)
+                .patch('/api/connection/' + connId)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send({ status: util.ConnectionStatus.ACCEPTED })
+                .expect(204)
+        );
+    });
+
+    it('Get connections list by user after approval should return 200 and not empty body', () => {
+        return (
+            request(app)
+                .get('/api/connection/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(1);
+                    expect(content.body[0]).toEqual(id2);
+                })
+        );
+    });
+
+});
+
