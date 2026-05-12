@@ -1,23 +1,41 @@
 var router = require('express').Router();
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const { body, param, validationResult } = require('express-validator');
 const util = require('../util.js');
 const cred = require('../APIcred.js');
 
+const SALT_ROUNDS = 10;
 
-router.post('/', (req, res) => {
-    util.parentEmailExists(req.body.email).then(found => {
+router.post('/', [
+    body('email').isEmail().normalizeEmail(),
+    body('pwd').notEmpty().isLength({ min: 6 })
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
+    }
+    try {
+        const found = await util.parentEmailExists(req.body.email);
         if (!found) {
-            require('../models/index.js').parents.create({email: req.body.email, pwd: require('crypto').createHash('md5').update(req.body.pwd).digest("hex")}).then(parent => {
-                res.setHeader('Content-Type', 'application/json');
-                res.status(201).send({ID: parent.id});
-            });
+            const hash = await bcrypt.hash(req.body.pwd, SALT_ROUNDS);
+            const parent = await require('../models/index.js').parents.create({email: req.body.email, pwd: hash});
+            res.status(201).json({ID: parent.id});
         } else {
             res.status(400).send({errCode: 2, errDesc: "Exists an User with this email"});
         }
-    });
+    } catch (err) {
+        res.status(500).send({errCode: -1, errDesc: "Internal error"});
+    }
 });
 
-router.get('/:email', cred.verifyToken, (req, res) => {
+router.get('/:email', cred.verifyToken, [
+    param('email').isEmail()
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });
+    }
     jwt.verify(req.token, cred.secret, (err, authData) => {
         if (err) {
             res.status(401).send(err);

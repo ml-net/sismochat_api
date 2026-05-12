@@ -1,9 +1,16 @@
 var router = require('express').Router();
 const jwt = require('jsonwebtoken');
+const { body, param, validationResult } = require('express-validator');
 const util = require('../util.js');
 const cred = require('../APIcred.js');
 
-router.get('/list/:msgStatus', cred.verifyToken, (req, res) => {
+router.get('/list/:msgStatus', cred.verifyToken, [
+    param('msgStatus').isInt({ min: 0, max: 1 })
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });
+    }
     jwt.verify(req.token, cred.secret, (err, tokenData) => {
         if (err) {
             console.log(err);
@@ -84,7 +91,14 @@ router.put('/:msgID/:status', cred.verifyToken, (req, res) => {
     });
 });
 
-router.post('/', cred.verifyToken, (req, res) => {
+router.post('/', cred.verifyToken, [
+    body('to').notEmpty().trim(),
+    body('message').notEmpty()
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
+    }
     jwt.verify(req.token, cred.secret, async (err, tokenData) => {
         if (err) {
             res.status(401).send(err);
