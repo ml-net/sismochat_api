@@ -1,53 +1,23 @@
-var router = require('express').Router();
-const jwt = require('jsonwebtoken');
+const router = require('express').Router();
+const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
-const cred = require('../APIcred.js');
+const db = require('../models/index.js');
 
-router.post('/:userid', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, async (err, authData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (authData.profile == 'Parent') {
-                if (await util.userExists(req.params.userid)) {
-                    require('../models/index.js').devices.findOne({ where: { userid: req.params.userid } }).then(d => {
-                        if (d == null) {
-                            // Associazione UserID <-> DeviceId non presente
-                            require('../models/index.js').devices.create({ userid: req.params.userid }).then(d => {
-                                res.status(201).send(d.id);
-                            });
-                        } else {
-                            res.status(400).send("User has Device registered yet");
-                        }
-                    });
-                } else {
-                    res.status(404).send("User doesn't exists");
-                }
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.post('/:userid', authenticate, authorize('Parent'), async (req, res) => {
+    if (!await util.userExists(req.params.userid)) {
+        return res.status(404).send("User doesn't exists");
+    }
+    const d = await db.devices.findOne({ where: { userid: req.params.userid } });
+    if (d) {
+        return res.status(400).send("User has Device registered yet");
+    }
+    const device = await db.devices.create({ userid: req.params.userid });
+    res.status(201).send(device.id);
 });
 
-router.delete('/:userid', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, (err, authData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (authData.profile == 'Parent') {
-                require('../models/index.js').devices.destroy({ where: { userid: req.params.userid } }).then(result => {
-                    res.sendStatus(204);
-                }).catch(error => {
-                    res.status(400).send(error);
-                })
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.delete('/:userid', authenticate, authorize('Parent'), async (req, res) => {
+    await db.devices.destroy({ where: { userid: req.params.userid } });
+    res.sendStatus(204);
 });
-
-
 
 module.exports = router;

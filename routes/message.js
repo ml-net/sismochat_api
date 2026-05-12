@@ -1,152 +1,78 @@
-var router = require('express').Router();
-const jwt = require('jsonwebtoken');
+const router = require('express').Router();
 const { body, param, validationResult } = require('express-validator');
+const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
-const cred = require('../APIcred.js');
+const db = require('../models/index.js');
 
-router.get('/list/:msgStatus', cred.verifyToken, [
+router.get('/list/:msgStatus', authenticate, authorize('User'), [
     param('msgStatus').isInt({ min: 0, max: 1 })
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });
     }
-    jwt.verify(req.token, cred.secret, (err, tokenData) => {
-        if (err) {
-            console.log(err);
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'User') {
-                if (util.userExists(tokenData.user)) {
-                    let mList = [];
-                    require('../models/index.js').messages.findAll({ where: { to: tokenData.user, status: req.params.msgStatus } }).then(msg => {
-                        for (let i = 0; i < msg.length; i++) {
-                            let m = msg[i].dataValues;
-                            if (m.to == tokenData.user) {
-                                mList.push({ msgID: m.id, from: m.from });
-                            }
-                        }
-                        if (mList.length > 0) {
-                            res.status(200).send(mList);
-                        } else {
-                            res.sendStatus(404);
-                        }
-                    });
-                } else {
-                    res.status(400).send('No user found');
-                }
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+    if (!await util.userExists(req.user.user)) {
+        return res.status(400).send('No user found');
+    }
+    const messages = await db.messages.findAll({ where: { to: req.user.user, status: req.params.msgStatus } });
+    const mList = messages.map(m => ({ msgID: m.id, from: m.from }));
+    if (mList.length > 0) {
+        res.status(200).send(mList);
+    } else {
+        res.sendStatus(404);
+    }
 });
 
-router.get("/:msgID", cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, (err, tokenData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'User') {
-                require('../models/index.js').messages.findOne({ where: { id: req.params.msgID } }).then(msg => {
-                    if (msg !== null) {
-                        if (msg.from == tokenData.user || msg.to == tokenData.user) {
-                            res.status(200).send(msg.dataValues);
-                        } else {
-                            res.status(400).send({ msg: "Not YOUR message!" })
-                        }
-                    } else {
-                        res.status(404).send({ msg: "No msg found" });
-                    }
-                });
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.get("/:msgID", authenticate, authorize('User'), async (req, res) => {
+    const msg = await db.messages.findOne({ where: { id: req.params.msgID } });
+    if (!msg) {
+        return res.status(404).send({ msg: "No msg found" });
+    }
+    if (msg.from == req.user.user || msg.to == req.user.user) {
+        res.status(200).send(msg.dataValues);
+    } else {
+        res.status(400).send({ msg: "Not YOUR message!" });
+    }
 });
 
-
-router.put('/:msgID/:status', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, (err, tokenData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'User') {
-                require('../models/index.js').messages.findOne({ where: { id: req.params.msgID } }).then(msg => {
-                    if (msg !== null) {
-                        if (msg.to == tokenData.user) {
-                            msg.update({ status: req.params.status }).then(res.sendStatus(204));
-                        } else {
-                            res.status(400).send({ msg: "Not YOUR message!" })
-                        }
-                    } else {
-                        res.status(404).send({ msg: 'No msg found' });
-                    }
-                });
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.put('/:msgID/:status', authenticate, authorize('User'), async (req, res) => {
+    const msg = await db.messages.findOne({ where: { id: req.params.msgID } });
+    if (!msg) {
+        return res.status(404).send({ msg: 'No msg found' });
+    }
+    if (msg.to != req.user.user) {
+        return res.status(400).send({ msg: "Not YOUR message!" });
+    }
+    await msg.update({ status: req.params.status });
+    res.sendStatus(204);
 });
 
-router.post('/', cred.verifyToken, [
+router.post('/', authenticate, authorize('User'), [
     body('to').notEmpty().trim(),
     body('message').notEmpty()
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
     }
-    jwt.verify(req.token, cred.secret, async (err, tokenData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'User') {
-                let fromID = tokenData.user;
-                let toID = req.body.to;
-                if (await util.userExists(fromID)) {
-                    if (await util.userExists(toID)) {
-                        if (req.body.message.trim != '') {
-                            let tmpmsg1 = {};
-                            let tmpmsg2 = {};
-                            tmpmsg1.from = fromID;
-                            tmpmsg1.to = toID;
-                            tmpmsg1.body = req.body.message;
-                            tmpmsg1.status = util.MessageStatus.UNREAD;
-                            tmpmsg2.from = fromID;
-                            tmpmsg2.to = toID;
-                            tmpmsg2.body = req.body.message;
-                            tmpmsg2.status = util.MessageStatus.UNREAD;
-                            require('../models/index.js').messages.create(tmpmsg1).then(msg1 => {
-                                // if sender and recipient are different (as usual) create two messages
-                                // in order to permits to each one to delete and mark read/unread
-                                if (fromID != toID) {
-                                    require('../models/index.js').messages.create(tmpmsg2).then(msg2 => {
-                                        res.status(201).send({ "messageID": msg1.id });
-                                    });
-                                } else {
-                                    res.status(201).send({ "messageID": msg1.id });
-                                }
-                            });
-                        } else {
-                            res.status(400).send({ msg: 'No empty body allowed' });
-                        }
-                    } else {
-                        res.status(404).send({ msg: 'To: No user found' });
-                    }
-                } else {
-                    res.status(404).send({ msg: 'From: No user found' });
-                }
-
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+    const fromID = req.user.user;
+    const toID = req.body.to;
+    if (!await util.userExists(fromID)) {
+        return res.status(404).send({ msg: 'From: No user found' });
+    }
+    if (!await util.userExists(toID)) {
+        return res.status(404).send({ msg: 'To: No user found' });
+    }
+    if (!req.body.message.trim()) {
+        return res.status(400).send({ msg: 'No empty body allowed' });
+    }
+    const msgData = { from: fromID, to: toID, body: req.body.message, status: util.MessageStatus.UNREAD };
+    const msg1 = await db.messages.create(msgData);
+    // Create second copy if sender != recipient (each user can manage their own copy)
+    if (fromID != toID) {
+        await db.messages.create(msgData);
+    }
+    res.status(201).send({ messageID: msg1.id });
 });
 
-
 module.exports = router;
-

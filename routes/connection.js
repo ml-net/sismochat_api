@@ -1,143 +1,62 @@
-var router = require('express').Router();
-const jwt = require('jsonwebtoken');
+const router = require('express').Router();
+const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
-const cred = require('../APIcred.js');
+const db = require('../models/index.js');
 
-router.post('/:from/:to', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, async (err, tokenData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'Parent') {
-                if (await util.userExists(req.params.from) && await util.userExists(req.params.to)) {
-                    require('../models/index.js').connections.create({ from: req.params.from, to: req.params.to, status: util.ConnectionStatus.REQUESTED }).then(c => {
-                        res.sendStatus(201);
-                    });
-                } else {
-                    res.status(404).send("Users not found");
-                }
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.post('/:from/:to', authenticate, authorize('Parent'), async (req, res) => {
+    if (!await util.userExists(req.params.from) || !await util.userExists(req.params.to)) {
+        return res.status(404).send("Users not found");
+    }
+    await db.connections.create({ from: req.params.from, to: req.params.to, status: util.ConnectionStatus.REQUESTED });
+    res.sendStatus(201);
 });
 
 // Connection list for user, requested by parent
-router.get('/:user', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, async (err, tokenData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'Parent') {
-                if (await util.userExists(req.params.user)) {
-                    let cList = [];
-                    require('../models/index.js').connections.findAll({ where: { status: util.ConnectionStatus.ACCEPTED, from: req.params.user } }).then(cl => {
-                        cl.forEach(c => {
-                            cList.push(c.dataValues.to);
-                        });
-                        res.status(200).send(cList);
-                    });
-                } else {
-                    res.status(404).send("Users not found");
-                }
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.get('/:user', authenticate, authorize('Parent'), async (req, res) => {
+    if (!await util.userExists(req.params.user)) {
+        return res.status(404).send("Users not found");
+    }
+    const cl = await db.connections.findAll({ where: { status: util.ConnectionStatus.ACCEPTED, from: req.params.user } });
+    res.status(200).send(cl.map(c => c.dataValues.to));
 });
 
 // Connection list for user, requested by same user
-router.get('/', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, async (err, tokenData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'User') {
-                if (await util.userExists(tokenData.user)) {
-                    let cList = [];
-                    require('../models/index.js').connections.findAll({ where: { status: util.ConnectionStatus.ACCEPTED, from: tokenData.user } }).then(cl => {
-                        cl.forEach(c => {
-                            cList.push(c.dataValues.to);
-                        });
-                        res.status(200).send(cList);
-                    });
-                } else {
-                    res.status(400).send("Users not found");
-                }
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.get('/', authenticate, authorize('User'), async (req, res) => {
+    if (!await util.userExists(req.user.user)) {
+        return res.status(400).send("Users not found");
+    }
+    const cl = await db.connections.findAll({ where: { status: util.ConnectionStatus.ACCEPTED, from: req.user.user } });
+    res.status(200).send(cl.map(c => c.dataValues.to));
 });
 
-router.get('/approvalList/:parent', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, async (err, tokenData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'Parent') {
-                if (await util.parentExists(tokenData.user)) {
-                    util.getUserByParent(tokenData.user).then(list => {
-                        let toList = [];
-                        let resList = [];
-                        list.forEach((u) => {
-                            toList.push(u.id);
-                        });
-                        require('../models/index.js').connections.findAll({ where: { status: util.ConnectionStatus.REQUESTED, to: toList } }).then(cList => {
-                            cList.forEach(c => {
-                                resList.push(c.dataValues);
-                            });
-                            res.status(200).send(resList);
-                        });
-                    });
-                } else {
-                    res.status(404).send("Users not found");
-                }
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.get('/approvalList/:parent', authenticate, authorize('Parent'), async (req, res) => {
+    if (!await util.parentExists(req.user.user)) {
+        return res.status(404).send("Users not found");
+    }
+    const list = await util.getUserByParent(req.user.user);
+    const toList = list.map(u => u.id);
+    const cList = await db.connections.findAll({ where: { status: util.ConnectionStatus.REQUESTED, to: toList } });
+    res.status(200).send(cList.map(c => c.dataValues));
 });
 
-router.patch('/:connid', cred.verifyToken, (req, res) => {
-    jwt.verify(req.token, cred.secret, (err, tokenData) => {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            if (tokenData.profile == 'Parent') {
-                require('../models/index.js').connections.findByPk(req.params.connid).then(c => {
-                    if (c === null) {
-                        res.status(404).send("Connection request not found");
-                    } else {
-                        if (typeof req.body.status != 'undefined') {
-                            if (req.body.status == util.ConnectionStatus.ACCEPTED) {
-                                c.update({ status: req.body.status }).then(c1 => {
-                                    require('../models/index.js').connections.create({ from: c1.to, to: c1.from, status: util.ConnectionStatus.ACCEPTED }).then(c2 => {
-                                        res.sendStatus(204);
-                                    });
-                                });
-                            } else {
-                                if (req.body.status == util.ConnectionStatus.REJECTED) {
-                                    c.update({ status: req.body.status }).then(res.sendStatus(204));
-                                } else {
-                                    res.status(400).send({ errCode: 10, errDesc: 'Status not recognized' });
-                                }
-                            }
-                        } else {
-                            res.status(400).send({ errCode: 9, errDesc: 'Status missing' });
-                        }
-                    }
-                });
-            } else {
-                res.status(401).send({ errCode: 7, errDesc: 'Profile Error' });
-            }
-        }
-    });
+router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => {
+    const c = await db.connections.findByPk(req.params.connid);
+    if (!c) {
+        return res.status(404).send("Connection request not found");
+    }
+    if (typeof req.body.status == 'undefined') {
+        return res.status(400).send({ errCode: 9, errDesc: 'Status missing' });
+    }
+    if (req.body.status == util.ConnectionStatus.ACCEPTED) {
+        const c1 = await c.update({ status: req.body.status });
+        await db.connections.create({ from: c1.to, to: c1.from, status: util.ConnectionStatus.ACCEPTED });
+        res.sendStatus(204);
+    } else if (req.body.status == util.ConnectionStatus.REJECTED) {
+        await c.update({ status: req.body.status });
+        res.sendStatus(204);
+    } else {
+        res.status(400).send({ errCode: 10, errDesc: 'Status not recognized' });
+    }
 });
-
 
 module.exports = router;
