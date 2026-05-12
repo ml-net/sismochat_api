@@ -68,3 +68,7 @@ feat(auth): add rate limiting on login endpoint
 fix(message): handle empty body validation
 docs: update README with commit convention
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and workflow guidelines.
