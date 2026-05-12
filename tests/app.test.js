@@ -1,3 +1,9 @@
+describe('CI failure test', () => {
+    it('should fail on purpose', () => {
+        expect(true).toBe(false);
+    });
+});
+
 const request = require('supertest');
 const app = require('../app');
 const util = require('../util.js');
