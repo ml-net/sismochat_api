@@ -40,31 +40,6 @@ npm test
 
 A test DB instance will be created and tests will run on it.
 
-## Commit Convention
+## Contributing
 
-This project enforces [Conventional Commits](https://www.conventionalcommits.org/) via `commitlint` + `husky`.
-
-Each commit message must follow this format:
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-```
-
-Allowed types:
-- `feat` — new feature
-- `fix` — bug fix
-- `refactor` — code change that neither fixes a bug nor adds a feature
-- `docs` — documentation only
-- `chore` — maintenance (deps, config, CI)
-- `test` — adding or updating tests
-- `style` — formatting, no code change
-- `perf` — performance improvement
-
-Examples:
-```
-feat(auth): add rate limiting on login endpoint
-fix(message): handle empty body validation
-docs: update README with commit convention
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and workflow guidelines.
