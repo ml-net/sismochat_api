@@ -59,7 +59,8 @@ router.get('/:userid', cred.verifyToken, (req, res) => {
             res.status(401).send(err);
         } else {
             if (authData.profile == 'User') {
-                if (await util.userExists(req.params.userid)) {
+                const u = await require('../models/index.js').users.findByPk(req.params.userid);
+                if (u) {
                     res.status(200).send({ id: req.params.userid, nick: u.nick, parent: u.parent, pubkey: u.key });
                 } else {
                     res.status(404).send('No user found');
@@ -77,7 +78,8 @@ router.get('/pubkey/:userid', cred.verifyToken, (req, res) => {
             res.status(401).send(err);
         } else {
             if (authData.profile == 'User') {
-                if (await util.userExists(req.params.userid)) {
+                const u = await require('../models/index.js').users.findByPk(req.params.userid);
+                if (u) {
                     res.status(200).send({ pubkey: u.key });
                 } else {
                     res.status(400).send('No user found');

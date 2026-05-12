@@ -24,13 +24,8 @@ let util = {
     },
 
     privEncode: function (msg, key) {
-        let hash = require('crypto').createHash('md5').update(msg).digest('hex');
-        require('fs').writeFileSync(hash, key);
-        const privateKey = require('fs').readFileSync(hash, "utf8");
-        const encrypted = require('crypto').privateEncrypt({ key: privateKey, passphrase: '' }, Buffer.from(msg));
-        let res = encrypted.toString("base64");
-        require('fs').unlinkSync(hash);
-        return res;
+        const encrypted = require('crypto').privateEncrypt({ key: key, passphrase: '' }, Buffer.from(msg));
+        return encrypted.toString("base64");
     },
 
     privDecode: function (msg, key, done) {

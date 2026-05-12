@@ -34,4 +34,13 @@ app.use('/api/device/', require('./routes/device.js'));
 
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack || err);
+    res.status(err.status || 500).json({
+        errCode: -1,
+        errDesc: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+    });
+});
+
 module.exports = app;

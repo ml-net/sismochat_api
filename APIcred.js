@@ -1,13 +1,20 @@
 let db = require('./models/index.js');
 let util = require('./util.js');
+const bcrypt = require('bcrypt');
 let cred = {
     secret: process.env.JWT_SECRET,
     credenziali: {},
 
     parentAuth: function (email, pwd, cb) {
-        db.parents.findOne({where: {email: email, pwd: pwd}}).then(p => {
+        db.parents.findOne({where: {email: email}}).then(p => {
             if (p && p.dataValues.id != "") {
-                cb({esito: 0, userid: p.dataValues.id});
+                bcrypt.compare(pwd, p.dataValues.pwd).then(match => {
+                    if (match) {
+                        cb({esito: 0, userid: p.dataValues.id});
+                    } else {
+                        cb({esito: 1});
+                    }
+                });
             } else {
                 cb({esito: 1});
             }
