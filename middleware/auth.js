@@ -1,4 +1,9 @@
 const jwt = require('jsonwebtoken');
+
+if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL: JWT_SECRET environment variable is not set.');
+}
+
 const secret = process.env.JWT_SECRET;
 
 // Verifies Bearer token and attaches decoded payload to req.user
