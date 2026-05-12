@@ -4,11 +4,6 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const app = express();
-var db = require('./models/index.js');
-const jwt = require('jsonwebtoken');
-const util = require('./util.js');
-const cred = require('./APIcred.js');
-const {Op} = require("sequelize");
 const swaggerUi = require('swagger-ui-express')
 const swaggerFile = require('./swagger_output.json')
 

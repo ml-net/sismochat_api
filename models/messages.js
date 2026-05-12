@@ -1,19 +1,13 @@
 'use strict';
 const uuid = require('uuid');
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class messages extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      messages.belongsTo(models.users, { foreignKey: 'from', as: 'sender' });
+      messages.belongsTo(models.users, { foreignKey: 'to', as: 'recipient' });
     }
-  };
+  }
   messages.init({
     from: DataTypes.UUID,
     to: DataTypes.UUID,
