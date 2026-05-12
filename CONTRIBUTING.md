@@ -50,8 +50,28 @@ This resets the test database and runs all tests with Jest.
 2. Make your changes and commit following [Conventional Commits](https://www.conventionalcommits.org/):
    ```
    <type>(<scope>): <description>
+
+   [optional body]
    ```
-   Allowed types: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `style`, `perf`
+
+   Allowed types:
+   - `feat` — new feature
+   - `fix` — bug fix
+   - `refactor` — code change that neither fixes a bug nor adds a feature
+   - `docs` — documentation only
+   - `chore` — maintenance (deps, config, CI)
+   - `test` — adding or updating tests
+   - `style` — formatting, no code change
+   - `perf` — performance improvement
+
+   Examples:
+   ```
+   feat(auth): add rate limiting on login endpoint
+   fix(message): handle empty body validation
+   docs: update README with commit convention
+   ```
+
+   Commit messages are validated by `commitlint` via a git hook — non-conforming messages will be rejected.
 
 3. Push and open a PR:
    ```bash
