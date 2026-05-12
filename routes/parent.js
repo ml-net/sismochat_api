@@ -11,6 +11,16 @@ router.post('/', [
     body('email').isEmail().normalizeEmail(),
     body('pwd').notEmpty().isLength({ min: 6 })
 ], async (req, res) => {
+    // #swagger.tags = ['Parents']
+    // #swagger.summary = 'Register a new parent'
+    // #swagger.description = 'Create a new parent account with email and password (min 6 chars).'
+    /* #swagger.parameters['body'] = {
+        in: 'body',
+        required: true,
+        schema: { $ref: '#/definitions/Parent' }
+    } */
+    /* #swagger.responses[201] = { description: 'Parent created, returns ID' } */
+    /* #swagger.responses[400] = { description: 'Email already exists or invalid input' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
@@ -32,6 +42,12 @@ router.post('/', [
 router.get('/:email', authenticate, [
     param('email').isEmail()
 ], async (req, res) => {
+    // #swagger.tags = ['Parents']
+    // #swagger.summary = 'Get parent by email'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'Parent found' } */
+    /* #swagger.responses[401] = { description: 'Authentication required' } */
+    /* #swagger.responses[404] = { description: 'Parent not found' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });

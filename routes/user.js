@@ -5,6 +5,18 @@ const util = require('../util.js');
 const db = require('../models/index.js');
 
 router.post('/', authenticate, authorize('Parent'), async (req, res) => {
+    // #swagger.tags = ['Users']
+    // #swagger.summary = 'Create a child user'
+    // #swagger.description = 'Create a new child user. If no public key is provided, a key pair is generated.'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.parameters['body'] = {
+        in: 'body',
+        required: true,
+        schema: { $ref: '#/definitions/User' }
+    } */
+    /* #swagger.responses[201] = { description: 'User created, returns ID and keys' } */
+    /* #swagger.responses[400] = { description: 'Parent not found' } */
+    /* #swagger.responses[401] = { description: 'Authentication required or wrong profile' } */
     if (!await util.parentExists(req.user.user)) {
         return res.status(400).send("Parent not found");
     }
@@ -25,6 +37,11 @@ router.post('/', authenticate, authorize('Parent'), async (req, res) => {
 });
 
 router.get('/:userid', authenticate, authorize('User'), async (req, res) => {
+    // #swagger.tags = ['Users']
+    // #swagger.summary = 'Get user by ID'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'User found' } */
+    /* #swagger.responses[404] = { description: 'User not found' } */
     const u = await db.users.findByPk(req.params.userid);
     if (u) {
         res.status(200).send({ id: req.params.userid, nick: u.nick, parent: u.parent, pubkey: u.key });
@@ -34,6 +51,11 @@ router.get('/:userid', authenticate, authorize('User'), async (req, res) => {
 });
 
 router.get('/pubkey/:userid', authenticate, authorize('User'), async (req, res) => {
+    // #swagger.tags = ['Users']
+    // #swagger.summary = 'Get public key of a user'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'Public key returned' } */
+    /* #swagger.responses[400] = { description: 'User not found' } */
     const u = await db.users.findByPk(req.params.userid);
     if (u) {
         res.status(200).send({ pubkey: u.key });
@@ -43,6 +65,11 @@ router.get('/pubkey/:userid', authenticate, authorize('User'), async (req, res) 
 });
 
 router.get('/parent/:parentemail', authenticate, authorize('Parent'), async (req, res) => {
+    // #swagger.tags = ['Users']
+    // #swagger.summary = 'Get all users by parent email'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'List of users' } */
+    /* #swagger.responses[404] = { description: 'Parent not found' } */
     const p = await db.parents.findOne({ where: { email: req.params.parentemail } });
     if (p) {
         const list = await util.getUserByParent(p.id);

@@ -7,6 +7,13 @@ const db = require('../models/index.js');
 router.get('/list/:msgStatus', authenticate, authorize('User'), [
     param('msgStatus').isInt({ min: 0, max: 1 })
 ], async (req, res) => {
+    // #swagger.tags = ['Messages']
+    // #swagger.summary = 'List messages by status'
+    // #swagger.description = 'Get list of messages for the authenticated user. Status: 0=unread, 1=read.'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.parameters['msgStatus'] = { description: '0 = unread, 1 = read' } */
+    /* #swagger.responses[200] = { description: 'List of messages' } */
+    /* #swagger.responses[404] = { description: 'No messages found' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });
@@ -24,6 +31,12 @@ router.get('/list/:msgStatus', authenticate, authorize('User'), [
 });
 
 router.get("/:msgID", authenticate, authorize('User'), async (req, res) => {
+    // #swagger.tags = ['Messages']
+    // #swagger.summary = 'Get message by ID'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'Message content' } */
+    /* #swagger.responses[400] = { description: 'Not your message' } */
+    /* #swagger.responses[404] = { description: 'Message not found' } */
     const msg = await db.messages.findOne({ where: { id: req.params.msgID } });
     if (!msg) {
         return res.status(404).send({ msg: "No msg found" });
@@ -36,6 +49,13 @@ router.get("/:msgID", authenticate, authorize('User'), async (req, res) => {
 });
 
 router.put('/:msgID/:status', authenticate, authorize('User'), async (req, res) => {
+    // #swagger.tags = ['Messages']
+    // #swagger.summary = 'Update message status'
+    // #swagger.description = 'Mark a message as read (1) or unread (0). Only the recipient can update.'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[204] = { description: 'Status updated' } */
+    /* #swagger.responses[400] = { description: 'Not your message' } */
+    /* #swagger.responses[404] = { description: 'Message not found' } */
     const msg = await db.messages.findOne({ where: { id: req.params.msgID } });
     if (!msg) {
         return res.status(404).send({ msg: 'No msg found' });
@@ -51,6 +71,18 @@ router.post('/', authenticate, authorize('User'), [
     body('to').notEmpty().trim(),
     body('message').notEmpty()
 ], async (req, res) => {
+    // #swagger.tags = ['Messages']
+    // #swagger.summary = 'Send a message'
+    // #swagger.description = 'Send an encrypted message to another user.'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.parameters['body'] = {
+        in: 'body',
+        required: true,
+        schema: { $ref: '#/definitions/Message' }
+    } */
+    /* #swagger.responses[201] = { description: 'Message sent, returns messageID' } */
+    /* #swagger.responses[400] = { description: 'Invalid input' } */
+    /* #swagger.responses[404] = { description: 'User not found' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });

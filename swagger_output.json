@@ -1,91 +1,101 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "1.0.0",
-    "title": "REST API",
-    "description": ""
+    "version": "0.1.0",
+    "title": "SiSMoChat API",
+    "description": "API for SiSMoChat - A secure chat application focused on child safety with parental control."
   },
-  "host": "localhost:3333",
+  "host": "localhost:3000",
   "basePath": "/",
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "Parents",
+      "description": "Parent account management"
+    },
+    {
+      "name": "Users",
+      "description": "Child user management"
+    },
+    {
+      "name": "Messages",
+      "description": "Messaging endpoints"
+    },
+    {
+      "name": "Connections",
+      "description": "Connection/friendship management"
+    },
+    {
+      "name": "Devices",
+      "description": "Device pairing management"
+    }
+  ],
   "schemes": [
     "http"
   ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "JWT token. Format: \"Bearer {token}\""
+    }
+  },
   "paths": {
-    "/api/auth/parent/{email}/{pwd}": {
+    "/parent": {
       "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "email",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "pwd",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
+        "tags": [
+          "Auth"
         ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/api/auth/parent": {
-      "post": {
-        "description": "",
+        "summary": "Authenticate parent",
+        "description": "Login with email and password, returns a JWT token.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "example": "any"
-                },
-                "pwd": {
-                  "example": "any"
-                }
-              }
+              "$ref": "#/definitions/Parent"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "JWT token returned"
           },
           "400": {
             "description": "Bad Request"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Invalid credentials"
+          },
+          "404": {
+            "description": "User not found"
           }
         }
       }
     },
-    "/api/auth/user": {
+    "/user": {
       "post": {
-        "description": "",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Authenticate child user",
+        "description": "Login with device token (base64-encoded userid.deviceId.encryptedDeviceId), returns a JWT token.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "token": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "base64userid.base64deviceid.encryptedDeviceId"
                 }
               }
             }
@@ -93,49 +103,46 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "JWT token returned"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Authentication failed"
           }
         }
       }
     },
-    "/api/super/": {
-      "post": {
-        "description": "",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "example": "any"
-                },
-                "pwd": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/api/super/{email}": {
+    "/": {
       "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Get own connections list",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of connected user IDs"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/{email}": {
+      "get": {
+        "tags": [
+          "Parents"
+        ],
+        "summary": "Get parent by email",
         "description": "",
         "parameters": [
           {
@@ -143,69 +150,69 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Parent found"
           },
           "400": {
             "description": "Bad Request"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Parent not found"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/user/": {
+    "/{userid}": {
       "post": {
-        "description": "",
-        "produces": [
-          "application/json"
+        "tags": [
+          "Devices"
         ],
+        "summary": "Register a device for a user",
+        "description": "Create a device ID and pair it with a child user. Only one device per user.",
         "parameters": [
           {
-            "name": "authorization",
-            "in": "header",
+            "name": "userid",
+            "in": "path",
+            "required": true,
             "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "pk": {
-                  "example": "any"
-                },
-                "nick": {
-                  "example": "any"
-                }
-              }
-            }
           }
         ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Device created, returns device ID"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "User already has a device"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
           }
-        }
-      }
-    },
-    "/api/user/{userid}": {
-      "get": {
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Remove device from a user",
         "description": "",
         "parameters": [
           {
@@ -213,28 +220,29 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
+          "204": {
+            "description": "Device removed"
           },
           "401": {
             "description": "Unauthorized"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/user/pubkey/{userid}": {
+    "/pubkey/{userid}": {
       "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get public key of a user",
         "description": "",
         "parameters": [
           {
@@ -242,28 +250,32 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Public key returned"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "User not found"
           },
           "401": {
             "description": "Unauthorized"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/user/parent/{parentemail}": {
+    "/parent/{parentemail}": {
       "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get all users by parent email",
         "description": "",
         "parameters": [
           {
@@ -271,57 +283,69 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
+            "description": "List of users"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Parent not found"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/message/list/{msgStatus}": {
+    "/list/{msgStatus}": {
       "get": {
-        "description": "",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "List messages by status",
+        "description": "Get list of messages for the authenticated user. Status: 0=unread, 1=read.",
         "parameters": [
           {
             "name": "msgStatus",
             "in": "path",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
+            "type": "string",
+            "description": "0 = unread, 1 = read"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "List of messages"
           },
           "400": {
             "description": "Bad Request"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "No messages found"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/message/{msgID}": {
+    "/{msgID}": {
       "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Get message by ID",
         "description": "",
         "parameters": [
           {
@@ -329,29 +353,36 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Message content"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Not your message"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Message not found"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/message/{msgID}/{status}": {
+    "/{msgID}/{status}": {
       "put": {
-        "description": "",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Update message status",
+        "description": "Mark a message as read (1) or unread (0). Only the recipient can update.",
         "parameters": [
           {
             "name": "msgID",
@@ -364,64 +395,36 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "Status updated"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Not your message"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Message not found"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/message/{to}/{message}": {
+    "/{from}/{to}": {
       "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "to",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "message",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
+        "tags": [
+          "Connections"
         ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/api/connection/{from}/{to}": {
-      "post": {
-        "description": "",
+        "summary": "Request a connection between two users",
+        "description": "Parent requests a friendship connection between two child users.",
         "parameters": [
           {
             "name": "from",
@@ -434,28 +437,32 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
+            "description": "Connection requested"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Users not found"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/connection/{user}": {
+    "/{user}": {
       "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Get connections list for a user (by parent)",
         "description": "",
         "parameters": [
           {
@@ -463,51 +470,32 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
+            "description": "List of connected user IDs"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
           }
-        }
-      }
-    },
-    "/api/connection/": {
-      "get": {
-        "description": "",
-        "parameters": [
+        },
+        "security": [
           {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
+            "Bearer": []
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
+        ]
       }
     },
-    "/api/connection/approvalList/{parent}": {
+    "/approvalList/{parent}": {
       "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Get pending connection requests for approval",
         "description": "",
         "parameters": [
           {
@@ -515,29 +503,33 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
+            "description": "List of pending connection requests"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Parent not found"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
-    "/api/connection/{connid}/{status}": {
-      "put": {
-        "description": "",
+    "/{connid}": {
+      "patch": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Accept or reject a connection request",
+        "description": "Update connection status: 0=accepted, 2=rejected.",
         "parameters": [
           {
             "name": "connid",
@@ -546,91 +538,82 @@
             "type": "string"
           },
           {
-            "name": "status",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/ConnectionStatus"
+            }
           }
         ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "Status updated"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Invalid status"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Connection not found"
           }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Parent": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "parent@example.com"
+        },
+        "pwd": {
+          "type": "string",
+          "example": "securepassword"
         }
       }
     },
-    "/api/device/{userid}/{deviceid}": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userid",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "deviceid",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
+    "User": {
+      "type": "object",
+      "properties": {
+        "nick": {
+          "type": "string",
+          "example": "childnick"
+        },
+        "pk": {
+          "type": "string",
+          "example": "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
         }
       }
     },
-    "/api/device/{userid}": {
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userid",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
+    "Message": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string",
+          "example": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "message": {
+          "type": "string",
+          "example": "encrypted message content"
+        }
+      }
+    },
+    "ConnectionStatus": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 0
         }
       }
     }
