@@ -6,7 +6,7 @@
 
 ## Git Workflow
 - Never push directly to main (branch protection + pre-push hook)
-- Always work on feature branches
+- Always work on feature branches, named as `type/issue-short-desc` (e.g. `feat/12-add-pagination`)
 - Conventional Commits enforced (commitlint + husky)
 - Allowed types: feat, fix, refactor, docs, chore, test, style, perf
 - Squash merge PRs (one commit per PR on main)
