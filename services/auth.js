@@ -5,10 +5,10 @@ const util = require('../util.js');
 async function parentAuth(email, pwd) {
     const p = await db.parents.findOne({ where: { email } });
     if (!p || !p.dataValues.id) {
-        return { esito: 1 };
+        return { esito: 2 }; // not found
     }
     const match = await bcrypt.compare(pwd, p.dataValues.pwd);
-    return match ? { esito: 0, userid: p.dataValues.id } : { esito: 1 };
+    return match ? { esito: 0, userid: p.dataValues.id } : { esito: 1 }; // 1 = wrong password
 }
 
 async function userAuth(usertoken) {
@@ -21,7 +21,13 @@ async function userAuth(usertoken) {
         return { errCode: 3, errDesc: "User unknown" };
     }
 
-    const decryptDeviceId = util.pubDecode(encrDevice, u.key).replace('\n', '');
+    let decryptDeviceId;
+    try {
+        decryptDeviceId = util.pubDecode(encrDevice, u.key).replace('\n', '');
+    } catch (e) {
+        return { errCode: 6, errDesc: "Token not valid" };
+    }
+
     if (decryptDeviceId != deviceId) {
         return { errCode: 6, errDesc: "Token not valid" };
     }

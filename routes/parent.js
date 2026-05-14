@@ -8,8 +8,8 @@ const db = require('../models/index.js');
 const SALT_ROUNDS = 10;
 
 router.post('/', [
-    body('email').isEmail().normalizeEmail(),
-    body('pwd').notEmpty().isLength({ min: 6 })
+    body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
+    body('pwd').notEmpty().isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], async (req, res) => {
     // #swagger.tags = ['Parents']
     // #swagger.summary = 'Register a new parent'
