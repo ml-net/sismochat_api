@@ -21,7 +21,13 @@ async function userAuth(usertoken) {
         return { errCode: 3, errDesc: "User unknown" };
     }
 
-    const decryptDeviceId = util.pubDecode(encrDevice, u.key).replace('\n', '');
+    let decryptDeviceId;
+    try {
+        decryptDeviceId = util.pubDecode(encrDevice, u.key).replace('\n', '');
+    } catch (e) {
+        return { errCode: 6, errDesc: "Token not valid" };
+    }
+
     if (decryptDeviceId != deviceId) {
         return { errCode: 6, errDesc: "Token not valid" };
     }

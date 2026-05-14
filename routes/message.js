@@ -86,10 +86,6 @@ router.post('/', authenticate, authorize('User'), [
     }
     const msgData = { from: fromID, to: toID, body: req.body.message, status: util.MessageStatus.UNREAD };
     const msg1 = await db.messages.create(msgData);
-    // Create second copy if sender != recipient (each user can manage their own copy)
-    if (fromID != toID) {
-        await db.messages.create(msgData);
-    }
     res.status(201).send({ messageID: msg1.id });
 });
 
