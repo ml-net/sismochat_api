@@ -3,7 +3,7 @@ let util = {
     // MESSAGE STATUS
     MessageStatus : {
         UNREAD: 0,
-        READ: 1
+        DOWNLOADED: 1
     },
 
     // CONNECTION STATUS
