@@ -1,13 +1,15 @@
-var router = require('express').Router();
+const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const util = require('../util.js');
-const cred = require('../APIcred.js');
+const { parentAuth, userAuth } = require('../services/auth.js');
+
+const secret = process.env.JWT_SECRET;
 
 router.post('/parent', [
     body('email').isEmail().normalizeEmail(),
     body('pwd').notEmpty()
-], (req, res) => {
+], async (req, res) => {
     // #swagger.tags = ['Auth']
     // #swagger.summary = 'Authenticate parent'
     // #swagger.description = 'Login with email and password, returns a JWT token.'
@@ -23,30 +25,21 @@ router.post('/parent', [
     if (!errors.isEmpty()) {
         return res.status(401).json({ errCode: 4, errDesc: "Missing credentials" });
     }
-    util.parentEmailExists(req.body.email).then(found => {
-        if (!found) {
-            res.status(404).send({ errCode: 3, errDesc: "User unknown" });
-        } else {
-            cred.parentAuth(req.body.email, req.body.pwd, (data) => {
-                switch (data.esito) {
-                    case 0:
-                        jwt.sign({ user: data.userid, email: req.body.email, profile: 'Parent' }, cred.secret, { expiresIn: "3600s" }, (err, token) => {
-                            res.json({ token });
-                        });
-                        break;
-                    case 1:
-                        res.status(401).send({ errCode: 4, errDesc: "Password mismatch" });
-                        break;
-                    default:
-                        res.status(400).send({ errCode: -1, errDesc: "Generic error" });
-                        break;
-                }
-            });
-        }
-    });
+    const found = await util.parentEmailExists(req.body.email);
+    if (!found) {
+        return res.status(404).send({ errCode: 3, errDesc: "User unknown" });
+    }
+    const data = await parentAuth(req.body.email, req.body.pwd);
+    if (data.esito === 0) {
+        jwt.sign({ user: data.userid, email: req.body.email, profile: 'Parent' }, secret, { expiresIn: "3600s" }, (err, token) => {
+            res.json({ token });
+        });
+    } else {
+        res.status(401).send({ errCode: 4, errDesc: "Password mismatch" });
+    }
 });
 
-router.post('/user', (req, res) => {
+router.post('/user', async (req, res) => {
     // #swagger.tags = ['Auth']
     // #swagger.summary = 'Authenticate child user'
     // #swagger.description = 'Login with device token (base64-encoded userid.deviceId.encryptedDeviceId), returns a JWT token.'
@@ -57,26 +50,21 @@ router.post('/user', (req, res) => {
     } */
     /* #swagger.responses[200] = { description: 'JWT token returned' } */
     /* #swagger.responses[401] = { description: 'Authentication failed' } */
-    let ut = req.body.token.split('.');
+    const ut = req.body.token.split('.');
     if (!ut || ut.length != 3) {
-        res.status(401).send({ errCode: 5, errDesc: "Authentication required" });
-    } else {
-        cred.userAuth(ut, (data) => {
-            switch (data.errCode) {
-                case 0:
-                    jwt.sign(data.jwt, cred.secret, { expiresIn: "14400s" }, (err, token) => {
-                        if (err) {
-                            res.status(401).send(err);
-                        } else {
-                            res.json({ token });
-                        }
-                    });
-                    break;
-                default: 
-                    res.status(401).send(data);
-                    break;
+        return res.status(401).send({ errCode: 5, errDesc: "Authentication required" });
+    }
+    const data = await userAuth(ut);
+    if (data.errCode === 0) {
+        jwt.sign(data.jwt, secret, { expiresIn: "14400s" }, (err, token) => {
+            if (err) {
+                res.status(401).send(err);
+            } else {
+                res.json({ token });
             }
         });
+    } else {
+        res.status(401).send(data);
     }
 });
 
