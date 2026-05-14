@@ -557,6 +557,42 @@ describe('Message endpoint', () => {
         );
     });
 
+    it('DELETE message (ACK) should return 204', () => {
+        return (
+            request(app)
+                .delete('/api/message/' + msgId)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(204)
+        );
+    });
+
+    it('GET deleted message should return 404', () => {
+        return (
+            request(app)
+                .get('/api/message/' + msgId)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(404)
+        );
+    });
+
+    it('DELETE non-existent message should return 404', () => {
+        return (
+            request(app)
+                .delete('/api/message/nonexists')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(404)
+        );
+    });
+
+    it('DELETE message without auth should return 401', () => {
+        return (
+            request(app)
+                .delete('/api/message/' + msgId)
+                .expect('Content-Type', /json/)
+                .expect(401)
+        );
+    });
+
 });
 
 describe('Connections endpoint', () => {

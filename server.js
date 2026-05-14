@@ -6,8 +6,10 @@ if (!process.env.JWT_SECRET) {
 }
 
 const app = require('./app');
+const { startCleanupJob } = require('./jobs/ttl-cleanup');
 
 const port = process.env.PORT || 3000;
 app.listen(port, function() {
   console.log('Your app is listening on port ' + port);
+  startCleanupJob();
 });
