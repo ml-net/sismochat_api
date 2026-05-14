@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const util = require('../util.js');
 const { parentAuth, userAuth } = require('../services/auth.js');
 
 const secret = process.env.JWT_SECRET;
@@ -25,15 +24,13 @@ router.post('/parent', [
     if (!errors.isEmpty()) {
         return res.status(401).json({ errCode: 4, errDesc: "Missing credentials" });
     }
-    const found = await util.parentEmailExists(req.body.email);
-    if (!found) {
-        return res.status(404).send({ errCode: 3, errDesc: "User unknown" });
-    }
     const data = await parentAuth(req.body.email, req.body.pwd);
     if (data.esito === 0) {
         jwt.sign({ user: data.userid, email: req.body.email, profile: 'Parent' }, secret, { expiresIn: "3600s" }, (err, token) => {
             res.json({ token });
         });
+    } else if (data.esito === 2) {
+        res.status(404).send({ errCode: 3, errDesc: "User unknown" });
     } else {
         res.status(401).send({ errCode: 4, errDesc: "Password mismatch" });
     }
