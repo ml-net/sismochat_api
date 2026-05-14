@@ -33,6 +33,7 @@ router.get('/list/:msgStatus', authenticate, authorize('User'), [
 router.get("/:msgID", authenticate, authorize('User'), async (req, res) => {
     // #swagger.tags = ['Messages']
     // #swagger.summary = 'Get message by ID'
+    // #swagger.description = 'Download a message. Automatically marks as DOWNLOADED (sender can no longer withdraw).'
     // #swagger.security = [{ "Bearer": [] }]
     /* #swagger.responses[200] = { description: 'Message content' } */
     /* #swagger.responses[400] = { description: 'Not your message' } */
@@ -42,29 +43,14 @@ router.get("/:msgID", authenticate, authorize('User'), async (req, res) => {
         return res.status(404).send({ msg: "No msg found" });
     }
     if (msg.from == req.user.user || msg.to == req.user.user) {
+        // Mark as downloaded before sending response
+        if (msg.to == req.user.user && msg.status == util.MessageStatus.UNREAD) {
+            await msg.update({ status: util.MessageStatus.DOWNLOADED });
+        }
         res.status(200).send(msg.dataValues);
     } else {
         res.status(400).send({ msg: "Not YOUR message!" });
     }
-});
-
-router.put('/:msgID/:status', authenticate, authorize('User'), async (req, res) => {
-    // #swagger.tags = ['Messages']
-    // #swagger.summary = 'Update message status'
-    // #swagger.description = 'Mark a message as read (1) or unread (0). Only the recipient can update.'
-    // #swagger.security = [{ "Bearer": [] }]
-    /* #swagger.responses[204] = { description: 'Status updated' } */
-    /* #swagger.responses[400] = { description: 'Not your message' } */
-    /* #swagger.responses[404] = { description: 'Message not found' } */
-    const msg = await db.messages.findOne({ where: { id: req.params.msgID } });
-    if (!msg) {
-        return res.status(404).send({ msg: 'No msg found' });
-    }
-    if (msg.to != req.user.user) {
-        return res.status(400).send({ msg: "Not YOUR message!" });
-    }
-    await msg.update({ status: req.params.status });
-    res.sendStatus(204);
 });
 
 router.post('/', authenticate, authorize('User'), [
@@ -109,21 +95,30 @@ router.post('/', authenticate, authorize('User'), [
 
 router.delete('/:msgID', authenticate, authorize('User'), async (req, res) => {
     // #swagger.tags = ['Messages']
-    // #swagger.summary = 'Delete a message (ACK)'
-    // #swagger.description = 'Acknowledge receipt and delete the message from the server. Used after successful download.'
+    // #swagger.summary = 'Delete a message (ACK or withdraw)'
+    // #swagger.description = 'Recipient: ACK after download (always allowed). Sender: withdraw only if message is still unread.'
     // #swagger.security = [{ "Bearer": [] }]
     /* #swagger.responses[204] = { description: 'Message deleted' } */
-    /* #swagger.responses[400] = { description: 'Not your message' } */
+    /* #swagger.responses[400] = { description: 'Not your message or already read' } */
     /* #swagger.responses[404] = { description: 'Message not found' } */
     const msg = await db.messages.findOne({ where: { id: req.params.msgID } });
     if (!msg) {
         return res.status(404).send({ msg: 'No msg found' });
     }
-    if (msg.from != req.user.user && msg.to != req.user.user) {
-        return res.status(400).send({ msg: "Not YOUR message!" });
+    if (msg.to == req.user.user) {
+        // Recipient can always delete (ACK)
+        await msg.destroy();
+        return res.sendStatus(204);
     }
-    await msg.destroy();
-    res.sendStatus(204);
+    if (msg.from == req.user.user) {
+        // Sender can only withdraw if not yet downloaded
+        if (msg.status == util.MessageStatus.UNREAD) {
+            await msg.destroy();
+            return res.sendStatus(204);
+        }
+        return res.status(400).send({ msg: 'Message already downloaded, cannot withdraw' });
+    }
+    res.status(400).send({ msg: "Not YOUR message!" });
 });
 
 module.exports = router;

@@ -454,6 +454,18 @@ describe('Message endpoint', () => {
         );
     });
 
+    it('GET unread message list should return 200 and not empty body', () => {
+        return (
+            request(app)
+                .get('/api/message/list/' + util.MessageStatus.UNREAD)
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toEqual(1)
+                })
+        );
+    });
+
     it('GET message should return 200 and correctly encoded message', () => {
         return (
             request(app)
@@ -506,54 +518,24 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('GET unread message list should return 200 and not empty body', () => {
+    it('GET message marks it as DOWNLOADED', () => {
         return (
             request(app)
-                .get('/api/message/list/' + util.MessageStatus.UNREAD)
+                .get('/api/message/' + msgId)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(1)
+                    expect(content.body.status).toEqual(util.MessageStatus.DOWNLOADED);
                 })
         );
     });
 
-    it('GET read message list with NO READ messages should return 404', () => {
-        return (
-            request(app)
-                .get('/api/message/list/' + util.MessageStatus.READ)
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
-                .expect(404)
-        );
-    });
-
-    it('Marking message as READ should return 204', () => {
-        return (
-            request(app)
-                .put('/api/message/' + msgId + '/' + util.MessageStatus.READ)
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
-                .expect(204)
-        );
-    });
-
-    it('GET unread message with NO UNREAD message should return 404', () => {
+    it('GET unread list after download should return 404', () => {
         return (
             request(app)
                 .get('/api/message/list/' + util.MessageStatus.UNREAD)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(404)
-        );
-    });
-
-    it('GET read messages list should return 200 and not empty body', () => {
-        return (
-            request(app)
-                .get('/api/message/list/' + util.MessageStatus.READ)
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
-                .expect(200)
-                .then((content) => {
-                    expect(content.body.length).toEqual(1)
-                })
         );
     });
 
@@ -590,6 +572,50 @@ describe('Message endpoint', () => {
                 .delete('/api/message/' + msgId)
                 .expect('Content-Type', /json/)
                 .expect(401)
+        );
+    });
+
+    it('Sender can withdraw unread message should return 204', () => {
+        let sentMsgId;
+        return (
+            request(app)
+                .post('/api/message/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .send({ to: id1, message: util.privEncode(testMsg, pv1) })
+                .expect(201)
+                .then((content) => {
+                    sentMsgId = content.body.messageID;
+                    return request(app)
+                        .delete('/api/message/' + sentMsgId)
+                        .set('Authorization', 'Bearer ' + JWTTokenUser)
+                        .expect(204);
+                })
+        );
+    });
+
+    it('Sender cannot withdraw read message should return 400', () => {
+        let sentMsgId;
+        return (
+            request(app)
+                .post('/api/message/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .send({ to: id2, message: util.privEncode(testMsg, pv1) })
+                .expect(201)
+                .then((content) => {
+                    sentMsgId = content.body.messageID;
+                    // Recipient downloads (marks as DOWNLOADED)
+                    return request(app)
+                        .get('/api/message/' + sentMsgId)
+                        .set('Authorization', 'Bearer ' + JWTTokenUser2)
+                        .expect(200);
+                })
+                .then(() => {
+                    // Sender tries to withdraw
+                    return request(app)
+                        .delete('/api/message/' + sentMsgId)
+                        .set('Authorization', 'Bearer ' + JWTTokenUser)
+                        .expect(400);
+                })
         );
     });
 
