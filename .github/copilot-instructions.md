@@ -52,7 +52,7 @@ Notes: There is no dedicated "lint" script. Commit messages are validated with `
 
 ## Copilot PR/branch workflow
 - Branch naming: use the pattern `type/issue-short-desc` (e.g., `feat/123-add-auth`). Include the issue number in the branch name and PR title.
-- Pre-PR checklist: run `npm install`; if you changed DB schema run `npm run migrate`; run `npm test` (or `npx jest <file>` for a single test); if you changed routes run `npm run swagger-autogen`. Verify no secrets are added.
+- Pre-PR checklist: run `npm install`; if you changed DB schema run `npm run migrate`; run `npm test` (or `npx jest <file>` for a single test); if you changed routes run `npm run swagger-autogen`. Verify no secrets are added. Check if changes impact documentation (Swagger, README, ADRs, issue comments) and update accordingly.
 - PR creation: open a draft PR with an English description, reference the issue (`Closes #N`), assign to @me, add relevant labels, and wait for CI to pass before marking as ready for review.
 - Merge: use squash merge into `main`, delete the branch after merge.
 - Copilot-specific rules: never push directly to `main`; when proposing changes create a branch and PR; do not auto-merge; ensure commit messages follow Conventional Commits; never commit secrets or hard-coded secrets (JWT_SECRET must come from environment/secrets).

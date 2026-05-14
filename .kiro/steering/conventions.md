@@ -16,6 +16,7 @@
 - Always assign to @me (--assignee @me)
 - Wait for CI to pass before merging
 - Do NOT commit and push automatically — always ask for confirmation first
+- Before finalizing, check if changes impact documentation (Swagger, README, ADRs, issue comments) and update accordingly
 
 ## Issues
 - Every task should be tracked as a GitHub issue before working on it
