@@ -407,36 +407,63 @@
         ]
       }
     },
-    "/{from}/{to}": {
-      "post": {
+    "/sent/{parent}": {
+      "get": {
         "tags": [
           "Connections"
         ],
-        "summary": "Request a connection between two users",
-        "description": "Parent requests a friendship connection between two child users.",
+        "summary": "Get sent connection requests with status",
+        "description": "Returns all connection requests initiated by children of this parent, with current status.",
         "parameters": [
           {
-            "name": "from",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "to",
+            "name": "parent",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "responses": {
-          "201": {
-            "description": "Connection requested"
+          "200": {
+            "description": "List of sent requests with status"
           },
           "401": {
             "description": "Unauthorized"
           },
           "404": {
-            "description": "Users not found"
+            "description": "Parent not found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/approvalList/{parent}": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Get pending connection requests for approval",
+        "description": "",
+        "parameters": [
+          {
+            "name": "parent",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of pending connection requests"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Parent not found"
           }
         },
         "security": [
@@ -479,30 +506,36 @@
         ]
       }
     },
-    "/approvalList/{parent}": {
-      "get": {
+    "/{from}/{to}": {
+      "post": {
         "tags": [
           "Connections"
         ],
-        "summary": "Get pending connection requests for approval",
-        "description": "",
+        "summary": "Request a connection between two users",
+        "description": "Parent requests a friendship connection between two child users.",
         "parameters": [
           {
-            "name": "parent",
+            "name": "from",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "to",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "responses": {
-          "200": {
-            "description": "List of pending connection requests"
+          "201": {
+            "description": "Connection requested"
           },
           "401": {
             "description": "Unauthorized"
           },
           "404": {
-            "description": "Parent not found"
+            "description": "Users not found"
           }
         },
         "security": [

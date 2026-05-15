@@ -85,6 +85,29 @@ router.patch('/:userid', authenticate, authorize('Parent'), async (req, res) => 
     res.status(200).send({ id: u.id, nick: u.nick });
 });
 
+router.delete('/:userid', authenticate, authorize('Parent'), async (req, res) => {
+    // #swagger.tags = ['Users']
+    // #swagger.summary = 'Delete a child user'
+    // #swagger.description = 'Removes child user and all related data (device, connections, pending messages).'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[204] = { description: 'User deleted' } */
+    /* #swagger.responses[403] = { description: 'Not your child' } */
+    /* #swagger.responses[404] = { description: 'User not found' } */
+    const u = await db.users.findByPk(req.params.userid);
+    if (!u) {
+        return res.status(404).send('No user found');
+    }
+    if (u.parent != req.user.user) {
+        return res.status(403).send({ msg: 'Not your child' });
+    }
+    // Clean up related data
+    await db.devices.destroy({ where: { userid: req.params.userid } });
+    await db.connections.destroy({ where: { [require('sequelize').Op.or]: [{ from: req.params.userid }, { to: req.params.userid }] } });
+    await db.messages.destroy({ where: { [require('sequelize').Op.or]: [{ from: req.params.userid }, { to: req.params.userid }] } });
+    await u.destroy();
+    res.sendStatus(204);
+});
+
 router.get('/parent/:parentemail', authenticate, authorize('Parent'), async (req, res) => {
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Get all users by parent email'
