@@ -542,6 +542,18 @@ describe('Message endpoint', () => {
         );
     });
 
+    it('GET message list with pagination should respect limit', () => {
+        return (
+            request(app)
+                .get('/api/v1/message/list/' + util.MessageStatus.UNREAD + '?limit=1&offset=0')
+                .set('Authorization', 'Bearer ' + JWTTokenUser2)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toBeLessThanOrEqual(1)
+                })
+        );
+    });
+
     it('GET message should return 200 and correctly encoded message', () => {
         return (
             request(app)
