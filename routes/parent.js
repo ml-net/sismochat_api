@@ -39,6 +39,33 @@ router.post('/', [
     }
 });
 
+router.patch('/password', authenticate, [
+    body('oldPassword').notEmpty(),
+    body('newPassword').notEmpty().isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+], async (req, res) => {
+    // #swagger.tags = ['Parents']
+    // #swagger.summary = 'Change parent password'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[204] = { description: 'Password changed' } */
+    /* #swagger.responses[400] = { description: 'Invalid input' } */
+    /* #swagger.responses[401] = { description: 'Old password incorrect' } */
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
+    }
+    const parent = await db.parents.findByPk(req.user.user);
+    if (!parent) {
+        return res.status(404).send({ errCode: 3, errDesc: "Parent not found" });
+    }
+    const match = await bcrypt.compare(req.body.oldPassword, parent.pwd);
+    if (!match) {
+        return res.status(401).send({ errCode: 4, errDesc: "Old password incorrect" });
+    }
+    const hash = await bcrypt.hash(req.body.newPassword, SALT_ROUNDS);
+    await parent.update({ pwd: hash });
+    res.sendStatus(204);
+});
+
 router.get('/:email', authenticate, [
     param('email').isEmail()
 ], async (req, res) => {
