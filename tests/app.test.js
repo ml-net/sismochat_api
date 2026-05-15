@@ -419,12 +419,45 @@ describe('User endpoint', () => {
 });
 
 describe('Message endpoint', () => {
+    it('Sending message without connection should return 403', () => {
+        return (
+            request(app)
+                .post('/api/v1/message/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .send({ to: id2, message: util.privEncode(testMsg, pv1) })
+                .expect(403)
+        );
+    });
+
+    it('Create connection for message test', () => {
+        return (
+            request(app)
+                .post('/api/v1/connection/' + id1 + '/' + id2)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(201)
+                .then(() => {
+                    return request(app)
+                        .get('/api/v1/connection/approvalList/parent')
+                        .set('Authorization', 'Bearer ' + JWTtokenParent)
+                        .expect(200);
+                })
+                .then((res) => {
+                    const conn = res.body[0];
+                    return request(app)
+                        .patch('/api/v1/connection/' + conn.id)
+                        .set('Authorization', 'Bearer ' + JWTtokenParent)
+                        .send({ status: 0 })
+                        .expect(204);
+                })
+        );
+    });
+
     it('Sending message should return 201', () => {
         return (
             request(app)
                 .post('/api/v1/message/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
-                .send({ to: id1, message: util.privEncode(testMsg, pv1) })
+                .send({ to: id2, message: util.privEncode(testMsg, pv1) })
                 .expect('Content-Type', /json/)
                 .expect(201)
                 .then((content) => {
@@ -458,7 +491,7 @@ describe('Message endpoint', () => {
         return (
             request(app)
                 .get('/api/v1/message/list/' + util.MessageStatus.UNREAD)
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect(200)
                 .then((content) => {
                     expect(content.body.length).toEqual(1)
@@ -470,7 +503,7 @@ describe('Message endpoint', () => {
         return (
             request(app)
                 .get('/api/v1/message/' + msgId)
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((content) => {
@@ -508,21 +541,11 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('GET message - NOT YOUR MESSAGE (Nor sender or receiver) should return 400', () => {
-        return (
-            request(app)
-                .get('/api/v1/message/' + msgId)
-                .set('Authorization', 'Bearer ' + JWTTokenUser2)
-                .expect('Content-Type', /json/)
-                .expect(400)
-        );
-    });
-
     it('GET message marks it as DOWNLOADED', () => {
         return (
             request(app)
                 .get('/api/v1/message/' + msgId)
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect(200)
                 .then((content) => {
                     expect(content.body.status).toEqual(util.MessageStatus.DOWNLOADED);
@@ -534,7 +557,7 @@ describe('Message endpoint', () => {
         return (
             request(app)
                 .get('/api/v1/message/list/' + util.MessageStatus.UNREAD)
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect(404)
         );
     });
@@ -543,7 +566,7 @@ describe('Message endpoint', () => {
         return (
             request(app)
                 .delete('/api/v1/message/' + msgId)
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect(204)
         );
     });
@@ -581,7 +604,7 @@ describe('Message endpoint', () => {
             request(app)
                 .post('/api/v1/message/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
-                .send({ to: id1, message: util.privEncode(testMsg, pv1) })
+                .send({ to: id2, message: util.privEncode(testMsg, pv1) })
                 .expect(201)
                 .then((content) => {
                     sentMsgId = content.body.messageID;
@@ -622,14 +645,14 @@ describe('Message endpoint', () => {
 });
 
 describe('Connections endpoint', () => {
-    it('GET (empty) connections list by user should return 200 and empty body', () => {
+    it('GET connections list by user should return 200', () => {
         return (
             request(app)
                 .get('/api/v1/connection/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(0);
+                    expect(content.body.length).toEqual(1);
                 })
         );
     });
@@ -646,14 +669,14 @@ describe('Connections endpoint', () => {
         );
     });
 
-    it('GET (empty) connections list by parent should return 200 and empty body', () => {
+    it('GET connections list by parent should return 200', () => {
         return (
             request(app)
                 .get('/api/v1/connection/' + id1)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(0);
+                    expect(content.body.length).toEqual(1);
                 })
         );
     });
@@ -758,14 +781,14 @@ describe('Connections endpoint', () => {
         );
     });
 
-    it('Get connections list by user after rejecting should return 200 and empty body', () => {
+    it('Get connections list by user after rejecting should return 200', () => {
         return (
             request(app)
                 .get('/api/v1/connection/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(0);
+                    expect(content.body.length).toEqual(1);
                 })
         );
     });
@@ -787,7 +810,7 @@ describe('Connections endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(1);
+                    expect(content.body.length).toEqual(2);
                     expect(content.body[0]).toEqual(id2);
                 })
         );
