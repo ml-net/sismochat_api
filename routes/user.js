@@ -64,6 +64,27 @@ router.get('/pubkey/:userid', authenticate, authorize('User'), async (req, res) 
     }
 });
 
+router.patch('/:userid', authenticate, authorize('Parent'), async (req, res) => {
+    // #swagger.tags = ['Users']
+    // #swagger.summary = 'Edit child nickname'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'Nickname updated' } */
+    /* #swagger.responses[403] = { description: 'Not your child' } */
+    /* #swagger.responses[404] = { description: 'User not found' } */
+    const u = await db.users.findByPk(req.params.userid);
+    if (!u) {
+        return res.status(404).send('No user found');
+    }
+    if (u.parent != req.user.user) {
+        return res.status(403).send({ msg: 'Not your child' });
+    }
+    if (!req.body.nick || !req.body.nick.trim()) {
+        return res.status(400).send({ msg: 'Nickname required' });
+    }
+    await u.update({ nick: req.body.nick.trim() });
+    res.status(200).send({ id: u.id, nick: u.nick });
+});
+
 router.get('/parent/:parentemail', authenticate, authorize('Parent'), async (req, res) => {
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Get all users by parent email'
