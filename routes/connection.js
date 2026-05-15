@@ -8,11 +8,19 @@ router.get('/', authenticate, authorize('User'), async (req, res) => {
     // #swagger.tags = ['Connections']
     // #swagger.summary = 'Get own connections list'
     // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.parameters['limit'] = { in: 'query', description: 'Max results (default 20)', type: 'integer' } */
+    /* #swagger.parameters['offset'] = { in: 'query', description: 'Skip N results (default 0)', type: 'integer' } */
     /* #swagger.responses[200] = { description: 'List of connected user IDs' } */
     if (!await util.userExists(req.user.user)) {
         return res.status(400).send("Users not found");
     }
-    const cl = await db.connections.findAll({ where: { status: util.ConnectionStatus.ACCEPTED, from: req.user.user } });
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const offset = parseInt(req.query.offset) || 0;
+    const cl = await db.connections.findAll({
+        where: { status: util.ConnectionStatus.ACCEPTED, from: req.user.user },
+        limit,
+        offset
+    });
     res.status(200).send(cl.map(c => c.dataValues.to));
 });
 
@@ -54,12 +62,20 @@ router.get('/:user', authenticate, authorize('Parent'), async (req, res) => {
     // #swagger.tags = ['Connections']
     // #swagger.summary = 'Get connections list for a user (by parent)'
     // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.parameters['limit'] = { in: 'query', description: 'Max results (default 20)', type: 'integer' } */
+    /* #swagger.parameters['offset'] = { in: 'query', description: 'Skip N results (default 0)', type: 'integer' } */
     /* #swagger.responses[200] = { description: 'List of connected user IDs' } */
     /* #swagger.responses[404] = { description: 'User not found' } */
     if (!await util.userExists(req.params.user)) {
         return res.status(404).send("Users not found");
     }
-    const cl = await db.connections.findAll({ where: { status: util.ConnectionStatus.ACCEPTED, from: req.params.user } });
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const offset = parseInt(req.query.offset) || 0;
+    const cl = await db.connections.findAll({
+        where: { status: util.ConnectionStatus.ACCEPTED, from: req.params.user },
+        limit,
+        offset
+    });
     res.status(200).send(cl.map(c => c.dataValues.to));
 });
 

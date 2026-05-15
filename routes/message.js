@@ -9,9 +9,11 @@ router.get('/list/:msgStatus', authenticate, authorize('User'), [
 ], async (req, res) => {
     // #swagger.tags = ['Messages']
     // #swagger.summary = 'List messages by status'
-    // #swagger.description = 'Get list of messages for the authenticated user. Status: 0=unread, 1=read.'
+    // #swagger.description = 'Get list of messages for the authenticated user. Status: 0=unread, 1=downloaded. Supports pagination via limit/offset query params.'
     // #swagger.security = [{ "Bearer": [] }]
-    /* #swagger.parameters['msgStatus'] = { description: '0 = unread, 1 = read' } */
+    /* #swagger.parameters['msgStatus'] = { description: '0 = unread, 1 = downloaded' } */
+    /* #swagger.parameters['limit'] = { in: 'query', description: 'Max results (default 20)', type: 'integer' } */
+    /* #swagger.parameters['offset'] = { in: 'query', description: 'Skip N results (default 0)', type: 'integer' } */
     /* #swagger.responses[200] = { description: 'List of messages' } */
     /* #swagger.responses[404] = { description: 'No messages found' } */
     const errors = validationResult(req);
@@ -21,7 +23,14 @@ router.get('/list/:msgStatus', authenticate, authorize('User'), [
     if (!await util.userExists(req.user.user)) {
         return res.status(400).send('No user found');
     }
-    const messages = await db.messages.findAll({ where: { to: req.user.user, status: req.params.msgStatus } });
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const offset = parseInt(req.query.offset) || 0;
+    const messages = await db.messages.findAll({
+        where: { to: req.user.user, status: req.params.msgStatus },
+        limit,
+        offset,
+        order: [['createdAt', 'ASC']]
+    });
     const mList = messages.map(m => ({ msgID: m.id, from: m.from }));
     if (mList.length > 0) {
         res.status(200).send(mList);
