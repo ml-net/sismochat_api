@@ -40,7 +40,7 @@ describe('Parent endpoint', () => {
     it('Create a new parent should return 201', () => {
         return (
             request(app)
-                .post('/api/super')
+                .post('/api/v1/super')
                 .send(newParent)
                 .expect('Content-Type', /json/)
                 .expect(201)
@@ -53,7 +53,7 @@ describe('Parent endpoint', () => {
     it('Create a parent with existing email should return 400', () => {
         return (
             request(app)
-                .post('/api/super')
+                .post('/api/v1/super')
                 .send(newParent)
                 .expect('Content-Type', /json/)
                 .expect(400)
@@ -63,7 +63,7 @@ describe('Parent endpoint', () => {
     it('GET parent without auth should return 401', () => {
         return (
             request(app)
-                .get('/api/super/' + newParent.email)
+                .get('/api/v1/super/' + newParent.email)
                 .expect('Content-Type', /json/)
                 .expect(401)
         );
@@ -72,7 +72,7 @@ describe('Parent endpoint', () => {
     it('Doing parent auth should return 200 and JWT token', () => {
         return (
             request(app)
-                .post('/api/auth/parent')
+                .post('/api/v1/auth/parent')
                 .send(newParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -86,7 +86,7 @@ describe('Parent endpoint', () => {
     it('Trying auth with missing credentials should return 401', () => {
         return (
             request(app)
-                .post('/api/auth/parent')
+                .post('/api/v1/auth/parent')
                 .send({
                     email: 'me@me.com'
                 })
@@ -98,7 +98,7 @@ describe('Parent endpoint', () => {
     it('Trying auth with invalid credentials should return 401', () => {
         return (
             request(app)
-                .post('/api/auth/parent')
+                .post('/api/v1/auth/parent')
                 .send({
                     email: 'me@me.com', pwd: "pippo"
                 })
@@ -110,7 +110,7 @@ describe('Parent endpoint', () => {
     it('trying auth with non existent user should return 404', () => {
         return (
             request(app)
-                .post('/api/auth/parent')
+                .post('/api/v1/auth/parent')
                 .send({
                     email: 'me@meme.com', pwd: "pippo"
                 })
@@ -122,7 +122,7 @@ describe('Parent endpoint', () => {
     it('Get parent by email should return 200', () => {
         return (
             request(app)
-                .get('/api/super/' + newParent.email)
+                .get('/api/v1/super/' + newParent.email)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -136,7 +136,7 @@ describe('Parent endpoint', () => {
     it('GET parent by email without auth should return 401', () => {
         return (
             request(app)
-                .get('/api/super/' + newParent.email)
+                .get('/api/v1/super/' + newParent.email)
                 .expect('Content-Type', /json/)
                 .expect(401)
         );
@@ -145,7 +145,7 @@ describe('Parent endpoint', () => {
     it('GET parent by not existent email should return 404', () => {
         return (
             request(app)
-                .get('/api/super/nobody@no.me')
+                .get('/api/v1/super/nobody@no.me')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(404)
         );
@@ -158,7 +158,7 @@ describe('User endpoint', () => {
     it('Create user without auth should return 401', () => {
         return (
             request(app)
-                .post('/api/user/')
+                .post('/api/v1/user/')
                 .send(newUserWithoutKey)
                 .expect('Content-Type', /json/)
                 .expect(401)
@@ -168,7 +168,7 @@ describe('User endpoint', () => {
     it('GET users without auth should return 401', () => {
         return (
             request(app)
-                .get('/api/user/parent/me@me.org')
+                .get('/api/v1/user/parent/me@me.org')
                 .expect(401)
         );
     });
@@ -176,7 +176,7 @@ describe('User endpoint', () => {
     it('Create user without key should return 201 and keys', () => {
         return (
             request(app)
-                .post('/api/user/')
+                .post('/api/v1/user/')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send(newUserWithoutKey)
                 .expect('Content-Type', /json/)
@@ -195,7 +195,7 @@ describe('User endpoint', () => {
     it('Create user without keys #2 should return 201 and keys', () => {
         return (
             request(app)
-                .post('/api/user/')
+                .post('/api/v1/user/')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send(newUserWithoutKey2)
                 .expect('Content-Type', /json/)
@@ -214,7 +214,7 @@ describe('User endpoint', () => {
     it('Getting single users by parent should return 200', () => {
         return (
             request(app)
-                .get('/api/user/parent/me@me.com')
+                .get('/api/v1/user/parent/me@me.com')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -227,7 +227,7 @@ describe('User endpoint', () => {
     it('Create user sending keys should return 201 and PubKey', () => {
         return (
             request(app)
-                .post('/api/user/')
+                .post('/api/v1/user/')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send(newUserWithKey)
                 .expect('Content-Type', /json/)
@@ -243,7 +243,7 @@ describe('User endpoint', () => {
     it('Getting users by parent should return 3 items', () => {
         return (
             request(app)
-                .get('/api/user/parent/me@me.com')
+                .get('/api/v1/user/parent/me@me.com')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -256,7 +256,7 @@ describe('User endpoint', () => {
     it('GET users by non existent parent should return 404', () => {
         return (
             request(app)
-                .get('/api/user/parent/me@me.org')
+                .get('/api/v1/user/parent/me@me.org')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(404)
         );
@@ -265,7 +265,7 @@ describe('User endpoint', () => {
     it('Creating new parent should return 201', () => {
         return (
             request(app)
-                .post('/api/super')
+                .post('/api/v1/super')
                 .send({ email: "me@me.org", pwd: "blabla" })
                 .expect('Content-Type', /json/)
                 .expect(201)
@@ -278,7 +278,7 @@ describe('User endpoint', () => {
     it('GET users by parent should return 200 and empty array', () => {
         return (
             request(app)
-                .get('/api/user/parent/me@me.org')
+                .get('/api/v1/user/parent/me@me.org')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -291,7 +291,7 @@ describe('User endpoint', () => {
     it('GET user by ID with wrong token should return 401', () => {
         return (
             request(app)
-                .get('/api/user/' + id1)
+                .get('/api/v1/user/' + id1)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(401)
@@ -301,7 +301,7 @@ describe('User endpoint', () => {
     it('GET user by ID withouth token should return 401', () => {
         return (
             request(app)
-                .get('/api/user/' + id1)
+                .get('/api/v1/user/' + id1)
                 .expect('Content-Type', /json/)
                 .expect(401)
         );
@@ -310,7 +310,7 @@ describe('User endpoint', () => {
     it('Creating device and pair with existent user without token should return 401', () => {
         return (
             request(app)
-                .post('/api/device/' + id1)
+                .post('/api/v1/device/' + id1)
                 .expect(401)
         );
     });
@@ -319,7 +319,7 @@ describe('User endpoint', () => {
         // Create another device for test
         return (
             request(app)
-                .post('/api/device/' + id1)
+                .post('/api/v1/device/' + id1)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(201)
                 .then((response) => {
@@ -327,7 +327,7 @@ describe('User endpoint', () => {
                 })
             &&
             request(app)
-                .post('/api/device/' + id2)
+                .post('/api/v1/device/' + id2)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(201)
                 .then((response) => {
@@ -339,7 +339,7 @@ describe('User endpoint', () => {
     it('Creating device and pair with non existent user should returns 404', () => {
         return (
             request(app)
-                .post('/api/device/asdfasdf')
+                .post('/api/v1/device/asdfasdf')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(404)
         );
@@ -350,7 +350,7 @@ describe('User endpoint', () => {
         let token2 = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv2);
         return (
             request(app)
-                .post('/api/auth/user')
+                .post('/api/v1/auth/user')
                 .send({ token: token1 })
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -360,7 +360,7 @@ describe('User endpoint', () => {
                 })
             &&
             request(app)
-                .post('/api/auth/user')
+                .post('/api/v1/auth/user')
                 .send({ token: token2 })
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -375,7 +375,7 @@ describe('User endpoint', () => {
         let token = util.btoa('s' + id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
         return (
             request(app)
-                .post('/api/auth/user')
+                .post('/api/v1/auth/user')
                 .send({ token: token })
                 .expect('Content-Type', /json/)
                 .expect(401)
@@ -389,7 +389,7 @@ describe('User endpoint', () => {
         let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId1, pv2);
         return (
             request(app)
-                .post('/api/auth/user')
+                .post('/api/v1/auth/user')
                 .send({ token: token })
                 .expect('Content-Type', /json/)
                 .expect(401)
@@ -402,7 +402,7 @@ describe('User endpoint', () => {
     it('Deleting device without auth should return 401', () => {
         return (
             request(app)
-                .delete('/api/device/' + id2)
+                .delete('/api/v1/device/' + id2)
                 .expect(401)
         );
     });
@@ -410,7 +410,7 @@ describe('User endpoint', () => {
     it('Deleting device should return 204', () => {
         return (
             request(app)
-                .delete('/api/device/' + id2)
+                .delete('/api/v1/device/' + id2)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(204)
         );
@@ -422,7 +422,7 @@ describe('Message endpoint', () => {
     it('Sending message should return 201', () => {
         return (
             request(app)
-                .post('/api/message/')
+                .post('/api/v1/message/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .send({ to: id1, message: util.privEncode(testMsg, pv1) })
                 .expect('Content-Type', /json/)
@@ -436,7 +436,7 @@ describe('Message endpoint', () => {
     it('Sending message without auth should return 401', () => {
         return (
             request(app)
-                .post('/api/message/')
+                .post('/api/v1/message/')
                 .send({ to: id2, message: util.privEncode(testMsg, pv1) })
                 .expect('Content-Type', /json/)
                 .expect(401)
@@ -446,7 +446,7 @@ describe('Message endpoint', () => {
     it('Sending message to non-existent user should return 404', () => {
         return (
             request(app)
-                .post('/api/message/')
+                .post('/api/v1/message/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .send({ to: 'nouser', message: util.privEncode(testMsg, pv1) })
                 .expect('Content-Type', /json/)
@@ -457,7 +457,7 @@ describe('Message endpoint', () => {
     it('GET unread message list should return 200 and not empty body', () => {
         return (
             request(app)
-                .get('/api/message/list/' + util.MessageStatus.UNREAD)
+                .get('/api/v1/message/list/' + util.MessageStatus.UNREAD)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
@@ -469,7 +469,7 @@ describe('Message endpoint', () => {
     it('GET message should return 200 and correctly encoded message', () => {
         return (
             request(app)
-                .get('/api/message/' + msgId)
+                .get('/api/v1/message/' + msgId)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -482,7 +482,7 @@ describe('Message endpoint', () => {
     it('GET non existent message should return 404', () => {
         return (
             request(app)
-                .get('/api/message/nonexists')
+                .get('/api/v1/message/nonexists')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect('Content-Type', /json/)
                 .expect(404)
@@ -492,7 +492,7 @@ describe('Message endpoint', () => {
     it('GET message without token should return 401', () => {
         return (
             request(app)
-                .get('/api/message/' + msgId)
+                .get('/api/v1/message/' + msgId)
                 .expect('Content-Type', /json/)
                 .expect(401)
         );
@@ -501,7 +501,7 @@ describe('Message endpoint', () => {
     it('GET message with invalid token should return 401', () => {
         return (
             request(app)
-                .get('/api/message/' + msgId)
+                .get('/api/v1/message/' + msgId)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(401)
@@ -511,7 +511,7 @@ describe('Message endpoint', () => {
     it('GET message - NOT YOUR MESSAGE (Nor sender or receiver) should return 400', () => {
         return (
             request(app)
-                .get('/api/message/' + msgId)
+                .get('/api/v1/message/' + msgId)
                 .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect('Content-Type', /json/)
                 .expect(400)
@@ -521,7 +521,7 @@ describe('Message endpoint', () => {
     it('GET message marks it as DOWNLOADED', () => {
         return (
             request(app)
-                .get('/api/message/' + msgId)
+                .get('/api/v1/message/' + msgId)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
@@ -533,7 +533,7 @@ describe('Message endpoint', () => {
     it('GET unread list after download should return 404', () => {
         return (
             request(app)
-                .get('/api/message/list/' + util.MessageStatus.UNREAD)
+                .get('/api/v1/message/list/' + util.MessageStatus.UNREAD)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(404)
         );
@@ -542,7 +542,7 @@ describe('Message endpoint', () => {
     it('DELETE message (ACK) should return 204', () => {
         return (
             request(app)
-                .delete('/api/message/' + msgId)
+                .delete('/api/v1/message/' + msgId)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(204)
         );
@@ -551,7 +551,7 @@ describe('Message endpoint', () => {
     it('GET deleted message should return 404', () => {
         return (
             request(app)
-                .get('/api/message/' + msgId)
+                .get('/api/v1/message/' + msgId)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(404)
         );
@@ -560,7 +560,7 @@ describe('Message endpoint', () => {
     it('DELETE non-existent message should return 404', () => {
         return (
             request(app)
-                .delete('/api/message/nonexists')
+                .delete('/api/v1/message/nonexists')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(404)
         );
@@ -569,7 +569,7 @@ describe('Message endpoint', () => {
     it('DELETE message without auth should return 401', () => {
         return (
             request(app)
-                .delete('/api/message/' + msgId)
+                .delete('/api/v1/message/' + msgId)
                 .expect('Content-Type', /json/)
                 .expect(401)
         );
@@ -579,14 +579,14 @@ describe('Message endpoint', () => {
         let sentMsgId;
         return (
             request(app)
-                .post('/api/message/')
+                .post('/api/v1/message/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .send({ to: id1, message: util.privEncode(testMsg, pv1) })
                 .expect(201)
                 .then((content) => {
                     sentMsgId = content.body.messageID;
                     return request(app)
-                        .delete('/api/message/' + sentMsgId)
+                        .delete('/api/v1/message/' + sentMsgId)
                         .set('Authorization', 'Bearer ' + JWTTokenUser)
                         .expect(204);
                 })
@@ -597,7 +597,7 @@ describe('Message endpoint', () => {
         let sentMsgId;
         return (
             request(app)
-                .post('/api/message/')
+                .post('/api/v1/message/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .send({ to: id2, message: util.privEncode(testMsg, pv1) })
                 .expect(201)
@@ -605,14 +605,14 @@ describe('Message endpoint', () => {
                     sentMsgId = content.body.messageID;
                     // Recipient downloads (marks as DOWNLOADED)
                     return request(app)
-                        .get('/api/message/' + sentMsgId)
+                        .get('/api/v1/message/' + sentMsgId)
                         .set('Authorization', 'Bearer ' + JWTTokenUser2)
                         .expect(200);
                 })
                 .then(() => {
                     // Sender tries to withdraw
                     return request(app)
-                        .delete('/api/message/' + sentMsgId)
+                        .delete('/api/v1/message/' + sentMsgId)
                         .set('Authorization', 'Bearer ' + JWTTokenUser)
                         .expect(400);
                 })
@@ -625,7 +625,7 @@ describe('Connections endpoint', () => {
     it('GET (empty) connections list by user should return 200 and empty body', () => {
         return (
             request(app)
-                .get('/api/connection/')
+                .get('/api/v1/connection/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
@@ -637,7 +637,7 @@ describe('Connections endpoint', () => {
     it('GET connections list by user with bad token should return 401', () => {
         return (
             request(app)
-                .get('/api/connection/')
+                .get('/api/v1/connection/')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(401)
                 .then((content) => {
@@ -649,7 +649,7 @@ describe('Connections endpoint', () => {
     it('GET (empty) connections list by parent should return 200 and empty body', () => {
         return (
             request(app)
-                .get('/api/connection/' + id1)
+                .get('/api/v1/connection/' + id1)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
@@ -661,7 +661,7 @@ describe('Connections endpoint', () => {
     it('GET empty connections list by parent with not existent user should return 404', () => {
         return (
             request(app)
-                .get('/api/connection/baduser')
+                .get('/api/v1/connection/baduser')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(404)
         );
@@ -671,7 +671,7 @@ describe('Connections endpoint', () => {
         let parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
         return (
             request(app)
-                .get('/api/connection/approvalList/' + parentId)
+                .get('/api/v1/connection/approvalList/' + parentId)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
@@ -683,7 +683,7 @@ describe('Connections endpoint', () => {
     it('Requesting connection should return 201', () => {
         return (
             request(app)
-                .post('/api/connection/' + id2 + '/' + id1)
+                .post('/api/v1/connection/' + id2 + '/' + id1)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(201)
         );
@@ -693,7 +693,7 @@ describe('Connections endpoint', () => {
         let parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
         return (
             request(app)
-                .get('/api/connection/approvalList/' + parentId)
+                .get('/api/v1/connection/approvalList/' + parentId)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
@@ -706,7 +706,7 @@ describe('Connections endpoint', () => {
     it('Changing connection request status without new status should return 400', () => {
         return (
             request(app)
-                .patch('/api/connection/' + connId)
+                .patch('/api/v1/connection/' + connId)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(400)
                 .then((content) => {
@@ -718,7 +718,7 @@ describe('Connections endpoint', () => {
     it('Changing connection request status without auth should return 401', () => {
         return (
             request(app)
-                .patch('/api/connection/' + connId)
+                .patch('/api/v1/connection/' + connId)
                 .expect(401)
                 .then((content) => {
                     expect(content.body.errCode).toEqual(1)
@@ -729,7 +729,7 @@ describe('Connections endpoint', () => {
     it('Changing connection request status with wrong auth profile should return 401', () => {
         return (
             request(app)
-                .patch('/api/connection/' + connId)
+                .patch('/api/v1/connection/' + connId)
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(401)
                 .then((content) => {
@@ -741,7 +741,7 @@ describe('Connections endpoint', () => {
     it('Changing connection request status with not existent connectionId should return 404', () => {
         return (
             request(app)
-                .patch('/api/connection/badconnid')
+                .patch('/api/v1/connection/badconnid')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send({ status: util.ConnectionStatus.ACCEPTED })
                 .expect(404)
@@ -751,7 +751,7 @@ describe('Connections endpoint', () => {
     it('Reject connection request status should return 204', () => {
         return (
             request(app)
-                .patch('/api/connection/' + connId)
+                .patch('/api/v1/connection/' + connId)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send({ status: util.ConnectionStatus.REJECTED })
                 .expect(204)
@@ -761,7 +761,7 @@ describe('Connections endpoint', () => {
     it('Get connections list by user after rejecting should return 200 and empty body', () => {
         return (
             request(app)
-                .get('/api/connection/')
+                .get('/api/v1/connection/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
@@ -773,7 +773,7 @@ describe('Connections endpoint', () => {
     it('Accept connection request status', () => {
         return (
             request(app)
-                .patch('/api/connection/' + connId)
+                .patch('/api/v1/connection/' + connId)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send({ status: util.ConnectionStatus.ACCEPTED })
                 .expect(204)
@@ -783,7 +783,7 @@ describe('Connections endpoint', () => {
     it('Get connections list by user after approval should return 200 and not empty body', () => {
         return (
             request(app)
-                .get('/api/connection/')
+                .get('/api/v1/connection/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {

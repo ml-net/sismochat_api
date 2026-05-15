@@ -6,7 +6,7 @@
     "description": "API for SiSMoChat - A secure chat application focused on child safety with parental control."
   },
   "host": "localhost:3000",
-  "basePath": "/",
+  "basePath": "/api/v1",
   "tags": [
     {
       "name": "Auth",
@@ -65,9 +65,6 @@
         "responses": {
           "200": {
             "description": "JWT token returned"
-          },
-          "400": {
-            "description": "Bad Request"
           },
           "401": {
             "description": "Invalid credentials"
@@ -346,7 +343,7 @@
           "Messages"
         ],
         "summary": "Get message by ID",
-        "description": "",
+        "description": "Download a message. Automatically marks as DOWNLOADED (sender can no longer withdraw).",
         "parameters": [
           {
             "name": "msgID",
@@ -374,24 +371,16 @@
             "Bearer": []
           }
         ]
-      }
-    },
-    "/{msgID}/{status}": {
-      "put": {
+      },
+      "delete": {
         "tags": [
           "Messages"
         ],
-        "summary": "Update message status",
-        "description": "Mark a message as read (1) or unread (0). Only the recipient can update.",
+        "summary": "Delete a message (ACK or withdraw)",
+        "description": "Recipient: ACK after download (always allowed). Sender: withdraw only if message is still unread.",
         "parameters": [
           {
             "name": "msgID",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "status",
             "in": "path",
             "required": true,
             "type": "string"
@@ -399,10 +388,10 @@
         ],
         "responses": {
           "204": {
-            "description": "Status updated"
+            "description": "Message deleted"
           },
           "400": {
-            "description": "Not your message"
+            "description": "Not your message or already read"
           },
           "401": {
             "description": "Unauthorized"
