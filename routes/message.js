@@ -81,6 +81,13 @@ router.post('/', authenticate, authorize('User'), [
     if (!await util.userExists(toID)) {
         return res.status(404).send({ msg: 'To: No user found' });
     }
+    // Verify sender and recipient are connected
+    const connection = await db.connections.findOne({
+        where: { from: fromID, to: toID, status: util.ConnectionStatus.ACCEPTED }
+    });
+    if (!connection) {
+        return res.status(403).send({ msg: 'Not connected to this user' });
+    }
     if (!req.body.message.trim()) {
         return res.status(400).send({ msg: 'No empty body allowed' });
     }
