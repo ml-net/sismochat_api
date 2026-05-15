@@ -151,6 +151,49 @@ describe('Parent endpoint', () => {
         );
     });
 
+    it('Change password with correct old password should return 204', () => {
+        return (
+            request(app)
+                .patch('/api/v1/super/password')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send({ oldPassword: newParent.pwd, newPassword: 'newpassword123' })
+                .expect(204)
+        );
+    });
+
+    it('Change password with wrong old password should return 401', () => {
+        return (
+            request(app)
+                .patch('/api/v1/super/password')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send({ oldPassword: 'wrongpassword', newPassword: 'another123' })
+                .expect(401)
+        );
+    });
+
+    it('Change password with short new password should return 400', () => {
+        return (
+            request(app)
+                .patch('/api/v1/super/password')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send({ oldPassword: 'newpassword123', newPassword: 'short' })
+                .expect(400)
+        );
+    });
+
+    it('Login with new password should return 200', () => {
+        return (
+            request(app)
+                .post('/api/v1/auth/parent')
+                .send({ email: newParent.email, pwd: 'newpassword123' })
+                .expect(200)
+                .then((res) => {
+                    expect(res.body).toHaveProperty('token');
+                    JWTtokenParent = res.body.token;
+                })
+        );
+    });
+
 });
 
 describe('User endpoint', () => {

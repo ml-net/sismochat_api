@@ -134,6 +134,51 @@
         ]
       }
     },
+    "/password": {
+      "patch": {
+        "tags": [
+          "Parents"
+        ],
+        "summary": "Change parent password",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "oldPassword": {
+                  "example": "any"
+                },
+                "newPassword": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Password changed"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Old password incorrect"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
     "/{email}": {
       "get": {
         "tags": [
