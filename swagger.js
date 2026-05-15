@@ -7,7 +7,7 @@ const doc = {
         description: 'API for SiSMoChat - A secure chat application focused on child safety with parental control.'
     },
     host: 'localhost:3000',
-    basePath: '/',
+    basePath: '/api/v1',
     schemes: ['http'],
     securityDefinitions: {
         Bearer: {

@@ -27,24 +27,16 @@ const authLimiter = rateLimit({
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
-// Routing rules
-// Authentication (rate limited)
-app.use('/api/auth/', authLimiter, require('./routes/auth.js'));
+// API v1 router
+const v1 = express.Router();
+v1.use('/auth/', authLimiter, require('./routes/auth.js'));
+v1.use('/super/', require('./routes/parent.js'));
+v1.use('/user/', require('./routes/user.js'));
+v1.use('/message/', require('./routes/message.js'));
+v1.use('/connection/', require('./routes/connection.js'));
+v1.use('/device/', require('./routes/device.js'));
 
-// Parents' management endpoint
-app.use('/api/super/', require('./routes/parent.js'));
-
-// Users' management endpoint
-app.use('/api/user/', require('./routes/user.js'));
-
-// Messages' endpoint
-app.use('/api/message/', require('./routes/message.js'));
-
-// Connections' management endpoint
-app.use('/api/connection/', require('./routes/connection.js'));
-
-// Devices' managemente Endpoint
-app.use('/api/device/', require('./routes/device.js'));
+app.use('/api/v1', v1);
 
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
