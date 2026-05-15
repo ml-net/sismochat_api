@@ -3,6 +3,7 @@ const { body, param, validationResult } = require('express-validator');
 const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
+const { notify } = require('../services/websocket');
 
 router.get('/list/:msgStatus', authenticate, authorize('User'), [
     param('msgStatus').isInt({ min: 0, max: 1 })
@@ -102,6 +103,7 @@ router.post('/', authenticate, authorize('User'), [
     }
     const msgData = { from: fromID, to: toID, body: req.body.message, status: util.MessageStatus.UNREAD };
     const msg1 = await db.messages.create(msgData);
+    notify(toID, { type: 'new_message', from: fromID });
     res.status(201).send({ messageID: msg1.id });
 });
 

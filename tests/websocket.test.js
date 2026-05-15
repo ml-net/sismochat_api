@@ -1,5 +1,6 @@
 const http = require('http');
 const WebSocket = require('ws');
+const request = require('supertest');
 const app = require('../app');
 const jwt = require('jsonwebtoken');
 
@@ -66,6 +67,22 @@ describe('WebSocket', () => {
                 expect(isOnline('test-user-cleanup')).toBe(false);
                 done();
             }, 50);
+        });
+    });
+
+    it('should receive new_message notification when message is sent', (done) => {
+        const { notify } = require('../services/websocket');
+        const token = createToken('recipient-user', 'User');
+        const ws = new WebSocket(`ws://localhost:${port}/ws?token=${token}`);
+        ws.on('open', () => {
+            notify('recipient-user', { type: 'new_message', from: 'sender-user' });
+        });
+        ws.on('message', (data) => {
+            const msg = JSON.parse(data);
+            expect(msg.type).toBe('new_message');
+            expect(msg.from).toBe('sender-user');
+            ws.close();
+            done();
         });
     });
 });
