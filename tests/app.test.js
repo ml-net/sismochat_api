@@ -645,6 +645,19 @@ describe('Message endpoint', () => {
 });
 
 describe('Connections endpoint', () => {
+    it('GET sent connection requests should return 200', () => {
+        return (
+            request(app)
+                .get('/api/v1/connection/sent/parent')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .expect(200)
+                .then((content) => {
+                    expect(content.body.length).toBeGreaterThan(0);
+                    expect(content.body[0]).toHaveProperty('status');
+                })
+        );
+    });
+
     it('GET connections list by user should return 200', () => {
         return (
             request(app)
