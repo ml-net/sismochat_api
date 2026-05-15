@@ -29,7 +29,7 @@ router.get('/list/:msgStatus', authenticate, authorize('User'), [
         where: { to: req.user.user, status: req.params.msgStatus },
         limit,
         offset,
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'ASC']]
     });
     const mList = messages.map(m => ({ msgID: m.id, from: m.from }));
     if (mList.length > 0) {
