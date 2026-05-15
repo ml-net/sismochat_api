@@ -14,6 +14,7 @@
 - Never amend commits — use new commits (PR history shows all changes, squash merges them)
 
 ## Pull Requests
+- Always create as draft (--draft), wait for explicit approval before marking ready and merging
 - Always assign to @me (--assignee @me)
 - Wait for CI to pass before merging
 - Do NOT commit and push automatically — always ask for confirmation first
