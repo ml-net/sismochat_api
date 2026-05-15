@@ -11,6 +11,7 @@
 - Allowed types: feat, fix, refactor, docs, chore, test, style, perf
 - Squash merge PRs (one commit per PR on main)
 - Delete branch after merge
+- Never amend commits — use new commits (PR history shows all changes, squash merges them)
 
 ## Pull Requests
 - Always assign to @me (--assignee @me)
