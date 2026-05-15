@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
+const { notify } = require('../services/websocket');
 
 // Connection list for user, requested by same user
 router.get('/', authenticate, authorize('User'), async (req, res) => {
@@ -90,6 +91,11 @@ router.post('/:from/:to', authenticate, authorize('Parent'), async (req, res) =>
         return res.status(404).send("Users not found");
     }
     await db.connections.create({ from: req.params.from, to: req.params.to, status: util.ConnectionStatus.REQUESTED });
+    // Notify the parent of the recipient child
+    const toUser = await db.users.findByPk(req.params.to);
+    if (toUser) {
+        notify(toUser.parent, { type: 'connection_request', from: req.params.from, to: req.params.to });
+    }
     res.sendStatus(201);
 });
 
@@ -116,9 +122,19 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
     if (req.body.status == util.ConnectionStatus.ACCEPTED) {
         const c1 = await c.update({ status: req.body.status });
         await db.connections.create({ from: c1.to, to: c1.from, status: util.ConnectionStatus.ACCEPTED });
+        // Notify the parent of the requester
+        const fromUser = await db.users.findByPk(c1.from);
+        if (fromUser) {
+            notify(fromUser.parent, { type: 'connection_status', connectionId: c1.id, status: req.body.status });
+        }
         res.sendStatus(204);
     } else if (req.body.status == util.ConnectionStatus.REJECTED) {
         await c.update({ status: req.body.status });
+        // Notify the parent of the requester
+        const fromUser = await db.users.findByPk(c.from);
+        if (fromUser) {
+            notify(fromUser.parent, { type: 'connection_status', connectionId: c.id, status: req.body.status });
+        }
         res.sendStatus(204);
     } else {
         res.status(400).send({ errCode: 10, errDesc: 'Status not recognized' });
