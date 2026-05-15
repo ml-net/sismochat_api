@@ -115,7 +115,20 @@
         ],
         "summary": "Get own connections list",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Max results (default 20)",
+            "type": "integer"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Skip N results (default 0)",
+            "type": "integer"
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of connected user IDs"
@@ -351,14 +364,26 @@
           "Messages"
         ],
         "summary": "List messages by status",
-        "description": "Get list of messages for the authenticated user. Status: 0=unread, 1=read.",
+        "description": "Get list of messages for the authenticated user. Status: 0=unread, 1=downloaded. Supports pagination via limit/offset query params.",
         "parameters": [
           {
             "name": "msgStatus",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "0 = unread, 1 = read"
+            "description": "0 = unread, 1 = downloaded"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Max results (default 20)",
+            "type": "integer"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Skip N results (default 0)",
+            "type": "integer"
           }
         ],
         "responses": {
@@ -531,6 +556,18 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Max results (default 20)",
+            "type": "integer"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Skip N results (default 0)",
+            "type": "integer"
           }
         ],
         "responses": {
