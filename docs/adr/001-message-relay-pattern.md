@@ -30,10 +30,47 @@ The server acts as a temporary message relay. Messages are stored only until the
 3. Recipient → DELETE → message removed from server (ACK)
 4. Undelivered messages → auto-purged after TTL (default 30 days)
 
-## Sender Withdrawal
-- Sender can DELETE a message only if status is still UNREAD
-- Once recipient does GET (DOWNLOADED), sender cannot withdraw
-- No notification to recipient on withdrawal
+```mermaid
+sequenceDiagram
+    participant S as Sender
+    participant Srv as Server
+    participant R as Recipient
+
+    S->>Srv: POST /message {to, body}
+    Srv->>Srv: Store (status: UNREAD)
+    Srv-->>S: 201 {messageID}
+    Srv-->>R: WS notification: new_message
+
+    R->>Srv: GET /message/:id
+    Srv->>Srv: Mark DOWNLOADED
+    Srv-->>R: 200 {message content}
+
+    R->>Srv: DELETE /message/:id (ACK)
+    Srv->>Srv: Destroy message
+    Srv-->>R: 204
+
+    Note over Srv: Message no longer exists on server
+    Note over R: Message saved in client local storage
+```
+
+### Sender Withdrawal
+
+```mermaid
+sequenceDiagram
+    participant S as Sender
+    participant Srv as Server
+
+    S->>Srv: DELETE /message/:id (withdraw)
+
+    alt Status = UNREAD
+        Srv->>Srv: Destroy message
+        Srv-->>S: 204
+    else Status = DOWNLOADED
+        Srv-->>S: 400 "Message already downloaded, cannot withdraw"
+    else Message not found (already ACKed)
+        Srv-->>S: 404 "Message not found: it may have been already delivered and acknowledged"
+    end
+```
 
 ## Consequences
 - Client is the source of truth for message history

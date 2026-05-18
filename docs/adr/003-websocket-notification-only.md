@@ -30,6 +30,50 @@ WebSocket is notification-only. When a message is sent, the server notifies the 
 - Auto-reconnect client-side with exponential backoff
 - Notifications: `new_message`, `connection_request`, `connection_status`
 
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant S as Sender
+    participant Srv as Server
+    participant WS as WebSocket
+    participant R as Recipient
+
+    Note over R,WS: Recipient connected via WS
+
+    S->>Srv: POST /message {to, body}
+    Srv->>Srv: Store message
+    Srv-->>S: 201 {messageID}
+    Srv->>WS: notify(recipientId, {type: "new_message", from: senderId})
+    WS-->>R: {type: "new_message", from: senderId}
+
+    R->>Srv: GET /message/:id
+    Srv-->>R: 200 {message content}
+
+    R->>Srv: DELETE /message/:id (ACK)
+    Srv-->>R: 204
+```
+
+### Fallback (WS disconnected)
+
+```mermaid
+sequenceDiagram
+    participant R as Recipient
+    participant Srv as Server
+
+    Note over R: WS disconnected, reconnects
+
+    R->>Srv: GET /message/list/0 (poll unread)
+    Srv-->>R: [{msgID, from}, ...]
+
+    loop For each message
+        R->>Srv: GET /message/:id
+        Srv-->>R: 200 {content}
+        R->>Srv: DELETE /message/:id (ACK)
+        Srv-->>R: 204
+    end
+```
+
 ## Consequences
 - REST endpoints remain the single source of truth for message delivery
 - If WS is down, client falls back to polling on reconnect
