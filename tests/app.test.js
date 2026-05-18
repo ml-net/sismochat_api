@@ -35,6 +35,29 @@ let id1, id2;
 let deviceId1, deviceId2;
 let msgId, connId;
 
+describe('Health check', () => {
+    it('GET /health should return 200 with status ok', () => {
+        return request(app)
+            .get('/health')
+            .expect(200)
+            .then((res) => {
+                expect(res.body.status).toBe('ok');
+            });
+    });
+
+    it('GET /health should return 503 when DB is unreachable', async () => {
+        const db = require('../models');
+        const original = db.sequelize.authenticate;
+        db.sequelize.authenticate = () => Promise.reject(new Error('connection refused'));
+
+        const res = await request(app).get('/health').expect(503);
+        expect(res.body.status).toBe('error');
+        expect(res.body.detail).toBe('database unreachable');
+
+        db.sequelize.authenticate = original;
+    });
+});
+
 describe('Parent endpoint', () => {
 
     it('Create a new parent should return 201', () => {
