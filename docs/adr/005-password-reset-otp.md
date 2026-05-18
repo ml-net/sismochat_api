@@ -61,6 +61,48 @@ Parents can forget their password and have no recovery mechanism. Child accounts
 
 ## Consequences
 
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant P as Parent
+    participant A as App Client
+    participant S as API Server
+    participant R as Resend
+
+    P->>A: "Forgot password" + enters email
+    A->>S: POST /super/reset-request {email}
+    S->>S: Find parent by email
+    S->>S: Generate 6-digit OTP
+    S->>S: Store SHA-256(OTP) + expiry + attempts=0
+    S->>R: Send email with OTP
+    R-->>P: Email: "Your code is 847291"
+    S-->>A: 200 "If the email exists, a reset code has been sent"
+    A-->>P: "Check your email, enter the code"
+
+    P->>A: Enters OTP + new password
+    A->>S: POST /super/reset {email, otp, newPassword}
+    S->>S: Check: OTP exists? Expired? Attempts < 5?
+    S->>S: SHA-256(input) == stored hash?
+
+    alt Valid OTP
+        S->>S: bcrypt(newPassword), save, clear OTP fields
+        S-->>A: 204 No Content
+        A-->>P: "Password changed!"
+    else Invalid OTP (attempts < 5)
+        S->>S: Increment attempts
+        S-->>A: 400 "Invalid code, N attempts remaining"
+    else Max attempts reached
+        S->>S: Clear OTP fields
+        S-->>A: 400 "Too many attempts, request a new code"
+    else Expired
+        S->>S: Clear OTP fields
+        S-->>A: 400 "Reset code expired"
+    end
+```
+
+## Consequences
+
 - No domain or app store account needed to ship this feature
 - Email may land in spam (mitigated by user-facing note about `onboarding@resend.dev`)
 - When a custom domain is available, switch sender address in env var — no code change
