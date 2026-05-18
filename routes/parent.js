@@ -12,12 +12,14 @@ const SALT_ROUNDS = 10;
 const RESET_TTL_MINUTES = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 30;
 const RESET_MAX_ATTEMPTS = 5;
 
+const RESET_RATE_LIMIT_WINDOW_MINUTES = parseInt(process.env.RESET_RATE_LIMIT_WINDOW_MINUTES) || 15;
+
 const resetRequestLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+    windowMs: RESET_RATE_LIMIT_WINDOW_MINUTES * 60 * 1000,
     max: 3,
     keyGenerator: (req) => req.body.email || req.ip,
     message: { errCode: -1, errDesc: 'Too many reset requests, try again later' },
-    validate: { xForwardedForHeader: false }
+    validate: false
 });
 
 router.post('/', [
@@ -159,8 +161,9 @@ router.post('/reset', [
 
     const hash = crypto.createHash('sha256').update(req.body.otp).digest('hex');
     if (hash !== parent.resetOtp) {
-        await parent.update({ resetOtpAttempts: parent.resetOtpAttempts + 1 });
-        const remaining = RESET_MAX_ATTEMPTS - parent.resetOtpAttempts - 1;
+        const newAttempts = parent.resetOtpAttempts + 1;
+        await parent.update({ resetOtpAttempts: newAttempts });
+        const remaining = RESET_MAX_ATTEMPTS - newAttempts;
         return res.status(400).json({ errCode: 5, errDesc: `Invalid code. ${remaining} attempts remaining` });
     }
 
