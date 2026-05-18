@@ -117,7 +117,7 @@ router.delete('/:msgID', authenticate, authorize('User'), async (req, res) => {
     /* #swagger.responses[404] = { description: 'Message not found' } */
     const msg = await db.messages.findOne({ where: { id: req.params.msgID } });
     if (!msg) {
-        return res.status(404).send({ msg: 'No msg found' });
+        return res.status(404).send({ msg: 'Message not found: it may have been already delivered and acknowledged by the recipient' });
     }
     if (msg.to == req.user.user) {
         // Recipient can always delete (ACK)
