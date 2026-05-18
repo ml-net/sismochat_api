@@ -26,6 +26,7 @@ where
 - `RESEND_API_KEY` is your Resend API key for sending emails (optional in dev — OTP will be logged to console)
 - `RESET_FROM_EMAIL` is the sender address for reset emails (default: `onboarding@resend.dev`)
 - `RESET_TOKEN_TTL_MINUTES` is the OTP expiry time in minutes (default: 30)
+- `RESET_RATE_LIMIT_WINDOW_MINUTES` is the rate limit window for reset requests (default: 15)
 
 Then, you must run
 
