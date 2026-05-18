@@ -35,6 +35,17 @@ let id1, id2;
 let deviceId1, deviceId2;
 let msgId, connId;
 
+describe('Health check', () => {
+    it('GET /health should return 200 with status ok', () => {
+        return request(app)
+            .get('/health')
+            .expect(200)
+            .then((res) => {
+                expect(res.body.status).toBe('ok');
+            });
+    });
+});
+
 describe('Parent endpoint', () => {
 
     it('Create a new parent should return 201', () => {
