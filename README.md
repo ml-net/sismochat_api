@@ -14,12 +14,18 @@ After cloning this repo, you must create a `.env` file like this
 PORT=1234
 NODE_ENV=development
 JWT_SECRET=trytoguess
+RESEND_API_KEY=re_xxxxxxxx
+RESET_FROM_EMAIL=onboarding@resend.dev
+RESET_TOKEN_TTL_MINUTES=30
 ```
 
 where
 - `PORT` is not mandatory (the default value of `3000` will be used in its absence), 
 - `NODE_ENV` must be set to `development` to create local copy of database, sqlite for dev environment
 - `JWT_SECRET` is you secret for JWT, in production there is another value!
+- `RESEND_API_KEY` is your Resend API key for sending emails (optional in dev — OTP will be logged to console)
+- `RESET_FROM_EMAIL` is the sender address for reset emails (default: `onboarding@resend.dev`)
+- `RESET_TOKEN_TTL_MINUTES` is the OTP expiry time in minutes (default: 30)
 
 Then, you must run
 
