@@ -40,6 +40,22 @@ npm test
 
 This resets the test database and runs all tests with Jest.
 
+## Testing Password Reset Locally
+
+Without a Resend API key, the OTP is logged to the server console instead of being emailed:
+
+```
+[email] RESEND_API_KEY not set, OTP not sent: 384721
+```
+
+To test without consuming the Resend free tier:
+1. Remove or comment out `RESEND_API_KEY` in your `.env`
+2. Restart the server
+3. Trigger a reset request — copy the OTP from the console output
+4. Use it in the reset confirmation step
+
+To test with real emails, add `RESEND_API_KEY=re_xxxxx` to `.env` (get a key at [resend.com](https://resend.com)).
+
 ## Git Workflow
 
 1. Create a branch from `main`:
