@@ -9,7 +9,10 @@ module.exports = (sequelize, DataTypes) => {
   }
   parents.init({
     email: DataTypes.STRING,
-    pwd: DataTypes.STRING
+    pwd: DataTypes.STRING,
+    resetOtp: DataTypes.STRING,
+    resetOtpExpiry: DataTypes.DATE,
+    resetOtpAttempts: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'parents',

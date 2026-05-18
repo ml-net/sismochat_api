@@ -1,11 +1,24 @@
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const { body, param, validationResult } = require('express-validator');
 const { authenticate } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
+const { sendResetOtp } = require('../services/email.js');
+const rateLimit = require('express-rate-limit');
 
 const SALT_ROUNDS = 10;
+const RESET_TTL_MINUTES = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 30;
+const RESET_MAX_ATTEMPTS = 5;
+
+const resetRequestLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 3,
+    keyGenerator: (req) => req.body.email || req.ip,
+    message: { errCode: -1, errDesc: 'Too many reset requests, try again later' },
+    validate: { xForwardedForHeader: false }
+});
 
 router.post('/', [
     body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
@@ -85,6 +98,75 @@ router.get('/:email', authenticate, [
     } else {
         res.status(404).send('No parent found');
     }
+});
+
+router.post('/reset-request', resetRequestLimiter, [
+    body('email').isEmail().normalizeEmail()
+], async (req, res) => {
+    // #swagger.tags = ['Parents']
+    // #swagger.summary = 'Request password reset OTP'
+    // #swagger.description = 'Sends a 6-digit OTP to the parent email. Does not reveal if email exists.'
+    /* #swagger.responses[200] = { description: 'Reset email sent (if account exists)' } */
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });
+    }
+
+    const parent = await db.parents.findOne({ where: { email: req.body.email } });
+    if (parent) {
+        const otp = String(Math.floor(100000 + Math.random() * 900000));
+        const hash = crypto.createHash('sha256').update(otp).digest('hex');
+        const expiry = new Date(Date.now() + RESET_TTL_MINUTES * 60 * 1000);
+        await parent.update({ resetOtp: hash, resetOtpExpiry: expiry, resetOtpAttempts: 0 });
+        await sendResetOtp(req.body.email, otp);
+    }
+
+    res.status(200).json({
+        msg: 'If the email exists, a reset code has been sent',
+        note: 'Check your spam folder — the email comes from onboarding@resend.dev'
+    });
+});
+
+router.post('/reset', [
+    body('email').isEmail().normalizeEmail(),
+    body('otp').isString().isLength({ min: 6, max: 6 }),
+    body('newPassword').notEmpty().isLength({ min: 6 })
+], async (req, res) => {
+    // #swagger.tags = ['Parents']
+    // #swagger.summary = 'Reset password with OTP'
+    // #swagger.description = 'Validates the 6-digit OTP and sets a new password. Max 5 attempts.'
+    /* #swagger.responses[204] = { description: 'Password reset successful' } */
+    /* #swagger.responses[400] = { description: 'Invalid or expired OTP' } */
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });
+    }
+
+    const parent = await db.parents.findOne({ where: { email: req.body.email } });
+    if (!parent || !parent.resetOtp || !parent.resetOtpExpiry) {
+        return res.status(400).json({ errCode: 5, errDesc: 'Invalid or expired reset code' });
+    }
+
+    if (new Date() > new Date(parent.resetOtpExpiry)) {
+        await parent.update({ resetOtp: null, resetOtpExpiry: null, resetOtpAttempts: 0 });
+        return res.status(400).json({ errCode: 5, errDesc: 'Reset code expired' });
+    }
+
+    if (parent.resetOtpAttempts >= RESET_MAX_ATTEMPTS) {
+        await parent.update({ resetOtp: null, resetOtpExpiry: null, resetOtpAttempts: 0 });
+        return res.status(400).json({ errCode: 5, errDesc: 'Too many attempts, request a new code' });
+    }
+
+    const hash = crypto.createHash('sha256').update(req.body.otp).digest('hex');
+    if (hash !== parent.resetOtp) {
+        await parent.update({ resetOtpAttempts: parent.resetOtpAttempts + 1 });
+        const remaining = RESET_MAX_ATTEMPTS - parent.resetOtpAttempts - 1;
+        return res.status(400).json({ errCode: 5, errDesc: `Invalid code. ${remaining} attempts remaining` });
+    }
+
+    const newHash = await bcrypt.hash(req.body.newPassword, SALT_ROUNDS);
+    await parent.update({ pwd: newHash, resetOtp: null, resetOtpExpiry: null, resetOtpAttempts: 0 });
+    res.sendStatus(204);
 });
 
 module.exports = router;
