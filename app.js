@@ -38,6 +38,8 @@ v1.use('/device/', require('./routes/device.js'));
 
 app.use('/api/v1', v1);
 
+app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // Global error handler
