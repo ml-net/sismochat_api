@@ -38,7 +38,14 @@ v1.use('/device/', require('./routes/device.js'));
 
 app.use('/api/v1', v1);
 
-app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/health', async (_req, res) => {
+    try {
+        await require('./models').sequelize.authenticate();
+        res.status(200).json({ status: 'ok' });
+    } catch (_err) {
+        res.status(503).json({ status: 'error', detail: 'database unreachable' });
+    }
+});
 
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
