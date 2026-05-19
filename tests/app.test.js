@@ -743,7 +743,8 @@ describe('Connections endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(1);
+                    // 1 explicit + 1 auto-connection with parent virtual user
+                    expect(content.body.length).toEqual(2);
                 })
         );
     });
@@ -767,7 +768,8 @@ describe('Connections endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(1);
+                    // 1 explicit + 1 auto-connection with parent virtual user
+                    expect(content.body.length).toEqual(2);
                 })
         );
     });
@@ -879,7 +881,8 @@ describe('Connections endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(1);
+                    // 1 original + 1 auto-connection with parent virtual user
+                    expect(content.body.length).toEqual(2);
                 })
         );
     });
@@ -901,8 +904,9 @@ describe('Connections endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(2);
-                    expect(content.body[0]).toEqual(id2);
+                    // 2 explicit + 1 auto-connection with parent virtual user
+                    expect(content.body.length).toEqual(3);
+                    expect(content.body).toContain(id2);
                 })
         );
     });

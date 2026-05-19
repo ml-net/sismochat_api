@@ -4,6 +4,16 @@ const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
 
+async function connectVirtualUser(parentId, childId) {
+    const virtualUser = await db.users.findOne({ where: { parent: parentId, nick: util.PARENT_USER_NICK } });
+    if (virtualUser) {
+        await db.connections.bulkCreate([
+            { id: require('uuid').v4(), from: virtualUser.id, to: childId, status: util.ConnectionStatus.ACCEPTED },
+            { id: require('uuid').v4(), from: childId, to: virtualUser.id, status: util.ConnectionStatus.ACCEPTED }
+        ]);
+    }
+}
+
 router.post('/', authenticate, authorize('Parent'), async (req, res) => {
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Create a child user'
@@ -22,6 +32,7 @@ router.post('/', authenticate, authorize('Parent'), async (req, res) => {
     }
     if (req.body.pk && req.body.pk != '') {
         const user = await db.users.create({ nick: req.body.nick, key: req.body.pk.replace(/\\n/g, '\n'), parent: req.user.user });
+        await connectVirtualUser(req.user.user, user.id);
         return res.status(201).json({ ID: user.id, keys: { public: req.body.pk } });
     }
     // Generate key pair if no public key provided
@@ -32,6 +43,7 @@ router.post('/', authenticate, authorize('Parent'), async (req, res) => {
     }, async (err, publicKey, privateKey) => {
         if (err) return res.status(400).send(err);
         const user = await db.users.create({ nick: req.body.nick, key: publicKey.replace(/\\n/g, '\n'), parent: req.user.user });
+        await connectVirtualUser(req.user.user, user.id);
         res.status(201).json({ ID: user.id, keys: { private: privateKey, public: publicKey } });
     });
 });
@@ -117,7 +129,7 @@ router.get('/parent/:parentemail', authenticate, authorize('Parent'), async (req
     const p = await db.parents.findOne({ where: { email: req.params.parentemail } });
     if (p) {
         const list = await util.getUserByParent(p.id);
-        res.status(200).send(list);
+        res.status(200).send(list.filter(u => u.nick !== util.PARENT_USER_NICK));
     } else {
         res.status(404).send('No parent found');
     }
