@@ -1,5 +1,7 @@
 let util = {
 
+    PARENT_USER_NICK: '__parent__',
+
     // MESSAGE STATUS
     MessageStatus : {
         UNREAD: 0,

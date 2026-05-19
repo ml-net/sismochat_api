@@ -9,6 +9,7 @@ const { sendResetOtp } = require('../services/email.js');
 const rateLimit = require('express-rate-limit');
 
 const SALT_ROUNDS = 10;
+const PARENT_USER_NICK = util.PARENT_USER_NICK;
 const RESET_TTL_MINUTES = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 30;
 const RESET_MAX_ATTEMPTS = 5;
 
@@ -45,7 +46,20 @@ router.post('/', [
         if (!found) {
             const hash = await bcrypt.hash(req.body.pwd, SALT_ROUNDS);
             const parent = await db.parents.create({ email: req.body.email, pwd: hash });
-            res.status(201).json({ ID: parent.id });
+
+            // Create virtual user for parent-to-child messaging
+            const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+                modulusLength: 2048,
+                publicKeyEncoding: { type: 'spki', format: 'pem' },
+                privateKeyEncoding: { type: 'pkcs8', format: 'pem', cipher: 'aes-256-cbc', passphrase: '' }
+            });
+            const virtualUser = await db.users.create({ nick: PARENT_USER_NICK, key: publicKey, parent: parent.id });
+            const device = await db.devices.create({ userid: virtualUser.id });
+
+            res.status(201).json({
+                ID: parent.id,
+                virtualUser: { id: virtualUser.id, deviceId: device.id, keys: { public: publicKey, private: privateKey } }
+            });
         } else {
             res.status(400).send({ errCode: 2, errDesc: "Exists an User with this email" });
         }
