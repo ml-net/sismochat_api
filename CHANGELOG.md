@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.5.1] - 2026-05-19 — POC test fixes
+
+### Fixed
+- Block duplicate connection requests (409 if already ACCEPTED or REQUESTED) (#119)
+
+### Changed
+- `GET /connection/` returns `[{id, nick}, ...]` instead of plain UUIDs (#120)
+
 ## [v0.5.0] - 2026-05-19 — Discovery & Communication
 
 ### Added
