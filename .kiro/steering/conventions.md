@@ -35,6 +35,7 @@
 ## CI/CD
 - GitHub Actions runs tests on Node 18 + 20
 - JWT_SECRET comes from GitHub Secrets, never hardcoded
+- Update CHANGELOG.md when tagging a new release
 
 ## Architecture Decisions
 - Server is a temporary message relay (not persistent store)

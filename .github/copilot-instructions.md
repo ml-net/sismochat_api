@@ -48,7 +48,7 @@ Notes: There is no dedicated "lint" script. Commit messages are validated with `
 - Pull Requests: assign to @me, wait for CI to pass before merging, and do not use automated commit+push without confirmation.
 - Issues: track every task as a GitHub issue, assign before starting, and add implementation details as comments on the issue (not in commit messages).
 - Commit messages: concise subject (lowercase, no period), optional 1-2 line body for context. Do NOT put `Closes #N` in commit messages — put it in the PR description.
-- CI/CD: GitHub Actions runs tests on Node 18 and 20; `JWT_SECRET` is provided from GitHub Secrets and must never be hardcoded.
+- CI/CD: GitHub Actions runs tests on Node 18 and 20; `JWT_SECRET` is provided from GitHub Secrets and must never be hardcoded. Update CHANGELOG.md when tagging a new release.
 - Architecture decisions recorded here: the server acts as a temporary message relay (not the single source of truth); the client is the source of truth for messages; SQLite is used for low-volume production as a relay pattern; end-to-end encryption uses RSA so the server cannot read message contents.
 
 ## Copilot PR/branch workflow
