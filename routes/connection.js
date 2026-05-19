@@ -3,6 +3,7 @@ const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
 const { notify } = require('../services/websocket');
+const { sendSystemMessage } = require('../services/systemMessage');
 
 // Connection list for user, requested by same user
 router.get('/', authenticate, authorize('User'), async (req, res) => {
@@ -127,6 +128,11 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
         if (fromUser) {
             notify(fromUser.parent, { type: 'connection_status', connectionId: c1.id, status: req.body.status });
         }
+        // System messages to both users
+        const toNick = await util.getNickByID(c1.to);
+        const fromNick = await util.getNickByID(c1.from);
+        await sendSystemMessage(c1.from, `You are now connected with ${toNick}`);
+        await sendSystemMessage(c1.to, `You are now connected with ${fromNick}`);
         res.sendStatus(204);
     } else if (req.body.status == util.ConnectionStatus.REJECTED) {
         await c.update({ status: req.body.status });
@@ -135,6 +141,8 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
         if (fromUser) {
             notify(fromUser.parent, { type: 'connection_status', connectionId: c.id, status: req.body.status });
         }
+        // System message to requester
+        await sendSystemMessage(c.from, 'Connection request declined');
         res.sendStatus(204);
     } else {
         res.status(400).send({ errCode: 10, errDesc: 'Status not recognized' });

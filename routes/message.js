@@ -32,7 +32,7 @@ router.get('/list/:msgStatus', authenticate, authorize('User'), [
         offset,
         order: [['createdAt', 'ASC']]
     });
-    const mList = messages.map(m => ({ msgID: m.id, from: m.from }));
+    const mList = messages.map(m => ({ msgID: m.id, from: m.from, type: m.type }));
     if (mList.length > 0) {
         res.status(200).send(mList);
     } else {

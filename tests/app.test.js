@@ -570,7 +570,7 @@ describe('Message endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(1)
+                    expect(content.body.length).toBeGreaterThanOrEqual(1);
                 })
         );
     });
@@ -641,12 +641,16 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('GET unread list after download should return 404', () => {
+    it('GET unread list after download should return 200 with only system messages', () => {
         return (
             request(app)
                 .get('/api/v1/message/list/' + util.MessageStatus.UNREAD)
                 .set('Authorization', 'Bearer ' + JWTTokenUser2)
-                .expect(404)
+                .expect(200)
+                .then((content) => {
+                    // Only system messages remain unread
+                    content.body.forEach(m => expect(m.type).toEqual('system'));
+                })
         );
     });
 

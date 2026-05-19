@@ -12,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     from: DataTypes.UUID,
     to: DataTypes.UUID,
     body: DataTypes.TEXT,
-    status: DataTypes.INTEGER
+    status: DataTypes.INTEGER,
+    type: { type: DataTypes.STRING, defaultValue: 'user' }
   }, {
     sequelize,
     modelName: 'messages',

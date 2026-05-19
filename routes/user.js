@@ -3,6 +3,7 @@ const { generateKeyPair } = require('crypto');
 const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
+const { sendSystemMessage } = require('../services/systemMessage');
 
 async function connectVirtualUser(parentId, childId) {
     const virtualUser = await db.users.findOne({ where: { parent: parentId, nick: util.PARENT_USER_NICK } });
@@ -111,6 +112,13 @@ router.delete('/:userid', authenticate, authorize('Parent'), async (req, res) =>
     }
     if (u.parent != req.user.user) {
         return res.status(403).send({ msg: 'Not your child' });
+    }
+    // Notify contacts before cleanup
+    const contacts = await db.connections.findAll({
+        where: { from: req.params.userid, status: util.ConnectionStatus.ACCEPTED }
+    });
+    for (const conn of contacts) {
+        await sendSystemMessage(conn.to, 'This contact is no longer available');
     }
     // Clean up related data
     await db.devices.destroy({ where: { userid: req.params.userid } });
