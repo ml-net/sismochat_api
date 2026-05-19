@@ -63,7 +63,7 @@ describe('Parent endpoint', () => {
     it('Create a new parent should return 201', () => {
         return (
             request(app)
-                .post('/api/v1/super')
+                .post('/api/v1/parent')
                 .send(newParent)
                 .expect('Content-Type', /json/)
                 .expect(201)
@@ -76,7 +76,7 @@ describe('Parent endpoint', () => {
     it('Create a parent with existing email should return 400', () => {
         return (
             request(app)
-                .post('/api/v1/super')
+                .post('/api/v1/parent')
                 .send(newParent)
                 .expect('Content-Type', /json/)
                 .expect(400)
@@ -86,7 +86,7 @@ describe('Parent endpoint', () => {
     it('GET parent without auth should return 401', () => {
         return (
             request(app)
-                .get('/api/v1/super/' + newParent.email)
+                .get('/api/v1/parent/' + newParent.email)
                 .expect('Content-Type', /json/)
                 .expect(401)
         );
@@ -145,7 +145,7 @@ describe('Parent endpoint', () => {
     it('Get parent by email should return 200', () => {
         return (
             request(app)
-                .get('/api/v1/super/' + newParent.email)
+                .get('/api/v1/parent/' + newParent.email)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -159,7 +159,7 @@ describe('Parent endpoint', () => {
     it('GET parent by email without auth should return 401', () => {
         return (
             request(app)
-                .get('/api/v1/super/' + newParent.email)
+                .get('/api/v1/parent/' + newParent.email)
                 .expect('Content-Type', /json/)
                 .expect(401)
         );
@@ -168,7 +168,7 @@ describe('Parent endpoint', () => {
     it('GET parent by not existent email should return 404', () => {
         return (
             request(app)
-                .get('/api/v1/super/nobody@no.me')
+                .get('/api/v1/parent/nobody@no.me')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(404)
         );
@@ -177,7 +177,7 @@ describe('Parent endpoint', () => {
     it('Change password with correct old password should return 204', () => {
         return (
             request(app)
-                .patch('/api/v1/super/password')
+                .patch('/api/v1/parent/password')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send({ oldPassword: newParent.pwd, newPassword: 'newpassword123' })
                 .expect(204)
@@ -187,7 +187,7 @@ describe('Parent endpoint', () => {
     it('Change password with wrong old password should return 401', () => {
         return (
             request(app)
-                .patch('/api/v1/super/password')
+                .patch('/api/v1/parent/password')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send({ oldPassword: 'wrongpassword', newPassword: 'another123' })
                 .expect(401)
@@ -197,7 +197,7 @@ describe('Parent endpoint', () => {
     it('Change password with short new password should return 400', () => {
         return (
             request(app)
-                .patch('/api/v1/super/password')
+                .patch('/api/v1/parent/password')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send({ oldPassword: 'newpassword123', newPassword: 'short' })
                 .expect(400)
@@ -234,7 +234,7 @@ describe('User endpoint', () => {
     it('GET users without auth should return 401', () => {
         return (
             request(app)
-                .get('/api/v1/user/parent/me@me.org')
+                .get('/api/v1/parent/me@me.org/children')
                 .expect(401)
         );
     });
@@ -280,7 +280,7 @@ describe('User endpoint', () => {
     it('Getting single users by parent should return 200', () => {
         return (
             request(app)
-                .get('/api/v1/user/parent/me@me.com')
+                .get('/api/v1/parent/me@me.com/children')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -309,7 +309,7 @@ describe('User endpoint', () => {
     it('Getting users by parent should return 3 items', () => {
         return (
             request(app)
-                .get('/api/v1/user/parent/me@me.com')
+                .get('/api/v1/parent/me@me.com/children')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -322,7 +322,7 @@ describe('User endpoint', () => {
     it('GET users by non existent parent should return 404', () => {
         return (
             request(app)
-                .get('/api/v1/user/parent/me@me.org')
+                .get('/api/v1/parent/me@me.org/children')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(404)
         );
@@ -331,7 +331,7 @@ describe('User endpoint', () => {
     it('Creating new parent should return 201', () => {
         return (
             request(app)
-                .post('/api/v1/super')
+                .post('/api/v1/parent')
                 .send({ email: "me@me.org", pwd: "blabla" })
                 .expect('Content-Type', /json/)
                 .expect(201)
@@ -344,7 +344,7 @@ describe('User endpoint', () => {
     it('GET users by parent should return 200 and empty array', () => {
         return (
             request(app)
-                .get('/api/v1/user/parent/me@me.org')
+                .get('/api/v1/parent/me@me.org/children')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -503,7 +503,7 @@ describe('Message endpoint', () => {
                 .expect(201)
                 .then(() => {
                     return request(app)
-                        .get('/api/v1/connection/approvalList/parent')
+                        .get('/api/v1/parent/me/connections/pending')
                         .set('Authorization', 'Bearer ' + JWTtokenParent)
                         .expect(200);
                 })
@@ -726,7 +726,7 @@ describe('Connections endpoint', () => {
     it('GET sent connection requests should return 200', () => {
         return (
             request(app)
-                .get('/api/v1/connection/sent/parent')
+                .get('/api/v1/parent/me/connections/sent')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
@@ -787,7 +787,7 @@ describe('Connections endpoint', () => {
         let parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
         return (
             request(app)
-                .get('/api/v1/connection/approvalList/' + parentId)
+                .get('/api/v1/parent/me/connections/pending')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
@@ -809,7 +809,7 @@ describe('Connections endpoint', () => {
         let parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
         return (
             request(app)
-                .get('/api/v1/connection/approvalList/' + parentId)
+                .get('/api/v1/parent/me/connections/pending')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
