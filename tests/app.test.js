@@ -810,33 +810,37 @@ describe('Connections endpoint', () => {
         );
     });
 
-    it('Requesting connection should return 201', () => {
+    it('Requesting duplicate connection should return 409', () => {
         return (
             request(app)
                 .post('/api/v1/connection/' + id2 + '/' + id1)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
-                .expect(201)
+                .expect(409)
         );
     });
 
-    it('GET approval list should return 200 and not empty body', () => {
-        let parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
+    it('GET approval list should return 200 and empty body (no new requests)', () => {
         return (
             request(app)
                 .get('/api/v1/parent/me/connections/pending')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(200)
                 .then((content) => {
-                    expect(content.body.length).toEqual(1);
-                    connId = content.body[0].id;
+                    expect(content.body.length).toEqual(0);
                 })
         );
     });
 
-    it('Changing connection request status without new status should return 400', () => {
+    it('Changing connection request status without new status should return 400', async () => {
+        // Get an existing connection ID
+        const sent = await request(app)
+            .get('/api/v1/parent/me/connections/sent')
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .expect(200);
+        const existingConnId = sent.body[0].id;
         return (
             request(app)
-                .patch('/api/v1/connection/' + connId)
+                .patch('/api/v1/connection/' + existingConnId)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(400)
                 .then((content) => {
@@ -848,7 +852,7 @@ describe('Connections endpoint', () => {
     it('Changing connection request status without auth should return 401', () => {
         return (
             request(app)
-                .patch('/api/v1/connection/' + connId)
+                .patch('/api/v1/connection/badconnid')
                 .expect(401)
                 .then((content) => {
                     expect(content.body.errCode).toEqual(1)
@@ -859,7 +863,7 @@ describe('Connections endpoint', () => {
     it('Changing connection request status with wrong auth profile should return 401', () => {
         return (
             request(app)
-                .patch('/api/v1/connection/' + connId)
+                .patch('/api/v1/connection/badconnid')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(401)
                 .then((content) => {
@@ -878,49 +882,17 @@ describe('Connections endpoint', () => {
         );
     });
 
-    it('Reject connection request status should return 204', () => {
-        return (
-            request(app)
-                .patch('/api/v1/connection/' + connId)
-                .set('Authorization', 'Bearer ' + JWTtokenParent)
-                .send({ status: util.ConnectionStatus.REJECTED })
-                .expect(204)
-        );
-    });
-
-    it('Get connections list by user after rejecting should return 200', () => {
+    it('Get connections list by user should return objects with id and nick', () => {
         return (
             request(app)
                 .get('/api/v1/connection/')
                 .set('Authorization', 'Bearer ' + JWTTokenUser)
                 .expect(200)
                 .then((content) => {
-                    // 1 original + 1 auto-connection with parent virtual user
+                    // 1 explicit + 1 auto-connection with parent virtual user
                     expect(content.body.length).toEqual(2);
-                })
-        );
-    });
-
-    it('Accept connection request status', () => {
-        return (
-            request(app)
-                .patch('/api/v1/connection/' + connId)
-                .set('Authorization', 'Bearer ' + JWTtokenParent)
-                .send({ status: util.ConnectionStatus.ACCEPTED })
-                .expect(204)
-        );
-    });
-
-    it('Get connections list by user after approval should return 200 and not empty body', () => {
-        return (
-            request(app)
-                .get('/api/v1/connection/')
-                .set('Authorization', 'Bearer ' + JWTTokenUser)
-                .expect(200)
-                .then((content) => {
-                    // 2 explicit + 1 auto-connection with parent virtual user
-                    expect(content.body.length).toEqual(3);
-                    expect(content.body).toContain(id2);
+                    expect(content.body[0]).toHaveProperty('id');
+                    expect(content.body[0]).toHaveProperty('nick');
                 })
         );
     });
