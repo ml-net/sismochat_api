@@ -4,6 +4,25 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.5.0] - 2026-05-19 — Discovery & Communication
+
+### Added
+- Parent virtual user pattern — auto-created at registration for parent-to-child messaging (#102, #106-109)
+- In-app connection discovery — search parent by email, view children (#103)
+- System messages — server-generated notifications on connection accept/reject and child deletion (#54, #98-101)
+- Discovery rate limiting — 10 req/hour per user, configurable via `DISCOVERY_RATE_LIMIT_PER_HOUR` (#105)
+- ADR-007: Parent Virtual User Pattern
+
+### Changed
+- REST resource nesting — mount point `/api/v1/super/` renamed to `/api/v1/parent/` (#104)
+- `GET /user/parent/:email` → `GET /parent/:email/children`
+- `GET /connection/sent/:parent` → `GET /parent/me/connections/sent`
+- `GET /connection/approvalList/:parent` → `GET /parent/me/connections/pending`
+- Message list includes `type` field (`user` or `system`)
+
+### Fixed
+- Reject password change when new password equals old (#63)
+
 ## [v0.4.0] - 2026-05-18 — Pre-beta essentials
 
 ### Added
