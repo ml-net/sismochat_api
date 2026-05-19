@@ -30,7 +30,7 @@ app.use(bodyParser.json());
 // API v1 router
 const v1 = express.Router();
 v1.use('/auth/', authLimiter, require('./routes/auth.js'));
-v1.use('/super/', require('./routes/parent.js'));
+v1.use('/parent/', require('./routes/parent.js'));
 v1.use('/user/', require('./routes/user.js'));
 v1.use('/message/', require('./routes/message.js'));
 v1.use('/connection/', require('./routes/connection.js'));

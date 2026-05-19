@@ -2,7 +2,7 @@ const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { body, param, validationResult } = require('express-validator');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
 const { sendResetOtp } = require('../services/email.js');
@@ -14,12 +14,21 @@ const RESET_TTL_MINUTES = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 30;
 const RESET_MAX_ATTEMPTS = 5;
 
 const RESET_RATE_LIMIT_WINDOW_MINUTES = parseInt(process.env.RESET_RATE_LIMIT_WINDOW_MINUTES) || 15;
+const DISCOVERY_RATE_LIMIT_PER_HOUR = parseInt(process.env.DISCOVERY_RATE_LIMIT_PER_HOUR) || 10;
 
 const resetRequestLimiter = rateLimit({
     windowMs: RESET_RATE_LIMIT_WINDOW_MINUTES * 60 * 1000,
     max: 3,
     keyGenerator: (req) => req.body.email || req.ip,
     message: { errCode: -1, errDesc: 'Too many reset requests, try again later' },
+    validate: false
+});
+
+const discoveryLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: DISCOVERY_RATE_LIMIT_PER_HOUR,
+    keyGenerator: (req) => req.user?.user || req.ip,
+    message: { errCode: -1, errDesc: 'Too many search requests, try again later' },
     validate: false
 });
 
@@ -95,7 +104,58 @@ router.patch('/password', authenticate, [
     res.sendStatus(204);
 });
 
-router.get('/:email', authenticate, [
+router.get('/me/connections/sent', authenticate, authorize('Parent'), async (req, res) => {
+    // #swagger.tags = ['Parents']
+    // #swagger.summary = 'Get sent connection requests'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'List of sent requests with status' } */
+    /* #swagger.responses[404] = { description: 'Parent not found' } */
+    if (!await util.parentExists(req.user.user)) {
+        return res.status(404).send("Parent not found");
+    }
+    const children = await util.getUserByParent(req.user.user);
+    const fromList = children.map(u => u.id);
+    const requests = await db.connections.findAll({ where: { from: fromList } });
+    res.status(200).send(requests.map(r => ({ id: r.id, from: r.from, to: r.to, status: r.status })));
+});
+
+router.get('/me/connections/pending', authenticate, authorize('Parent'), async (req, res) => {
+    // #swagger.tags = ['Parents']
+    // #swagger.summary = 'Get pending connection requests for approval'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'List of pending connection requests' } */
+    /* #swagger.responses[404] = { description: 'Parent not found' } */
+    if (!await util.parentExists(req.user.user)) {
+        return res.status(404).send("Parent not found");
+    }
+    const list = await util.getUserByParent(req.user.user);
+    const toList = list.map(u => u.id);
+    const cList = await db.connections.findAll({ where: { status: util.ConnectionStatus.REQUESTED, to: toList } });
+    res.status(200).send(cList.map(c => c.dataValues));
+});
+
+router.get('/:email/children', authenticate, authorize('Parent'), discoveryLimiter, [
+    param('email').isEmail()
+], async (req, res) => {
+    // #swagger.tags = ['Parents']
+    // #swagger.summary = 'Get children of a parent by email'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'List of children (nick only)' } */
+    /* #swagger.responses[404] = { description: 'Parent not found' } */
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });
+    }
+    const p = await db.parents.findOne({ where: { email: req.params.email } });
+    if (p) {
+        const list = await util.getUserByParent(p.id);
+        res.status(200).send(list.filter(u => u.nick !== PARENT_USER_NICK));
+    } else {
+        res.status(404).send('No parent found');
+    }
+});
+
+router.get('/:email', authenticate, discoveryLimiter, [
     param('email').isEmail()
 ], async (req, res) => {
     // #swagger.tags = ['Parents']

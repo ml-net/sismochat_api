@@ -120,19 +120,4 @@ router.delete('/:userid', authenticate, authorize('Parent'), async (req, res) =>
     res.sendStatus(204);
 });
 
-router.get('/parent/:parentemail', authenticate, authorize('Parent'), async (req, res) => {
-    // #swagger.tags = ['Users']
-    // #swagger.summary = 'Get all users by parent email'
-    // #swagger.security = [{ "Bearer": [] }]
-    /* #swagger.responses[200] = { description: 'List of users' } */
-    /* #swagger.responses[404] = { description: 'Parent not found' } */
-    const p = await db.parents.findOne({ where: { email: req.params.parentemail } });
-    if (p) {
-        const list = await util.getUserByParent(p.id);
-        res.status(200).send(list.filter(u => u.nick !== util.PARENT_USER_NICK));
-    } else {
-        res.status(404).send('No parent found');
-    }
-});
-
 module.exports = router;
