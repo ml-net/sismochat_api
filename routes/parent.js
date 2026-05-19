@@ -99,6 +99,9 @@ router.patch('/password', authenticate, [
     if (!match) {
         return res.status(401).send({ errCode: 4, errDesc: "Old password incorrect" });
     }
+    if (req.body.oldPassword === req.body.newPassword) {
+        return res.status(400).send({ errCode: 4, errDesc: "New password must differ from old password" });
+    }
     const hash = await bcrypt.hash(req.body.newPassword, SALT_ROUNDS);
     await parent.update({ pwd: hash });
     res.sendStatus(204);
