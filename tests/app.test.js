@@ -204,6 +204,16 @@ describe('Parent endpoint', () => {
         );
     });
 
+    it('Change password with same old and new should return 400', () => {
+        return (
+            request(app)
+                .patch('/api/v1/parent/password')
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send({ oldPassword: 'newpassword123', newPassword: 'newpassword123' })
+                .expect(400)
+        );
+    });
+
     it('Login with new password should return 200', () => {
         return (
             request(app)
