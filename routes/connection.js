@@ -23,7 +23,11 @@ router.get('/', authenticate, authorize('User'), async (req, res) => {
         limit,
         offset
     });
-    res.status(200).send(cl.map(c => c.dataValues.to));
+    const contacts = await Promise.all(cl.map(async c => {
+        const nick = await util.getNickByID(c.dataValues.to);
+        return { id: c.dataValues.to, nick };
+    }));
+    res.status(200).send(contacts);
 });
 
 // Sent connection requests (by parent)
@@ -78,7 +82,11 @@ router.get('/:user', authenticate, authorize('Parent'), async (req, res) => {
         limit,
         offset
     });
-    res.status(200).send(cl.map(c => c.dataValues.to));
+    const contacts = await Promise.all(cl.map(async c => {
+        const nick = await util.getNickByID(c.dataValues.to);
+        return { id: c.dataValues.to, nick };
+    }));
+    res.status(200).send(contacts);
 });
 
 router.post('/:from/:to', authenticate, authorize('Parent'), async (req, res) => {
@@ -90,6 +98,13 @@ router.post('/:from/:to', authenticate, authorize('Parent'), async (req, res) =>
     /* #swagger.responses[404] = { description: 'Users not found' } */
     if (!await util.userExists(req.params.from) || !await util.userExists(req.params.to)) {
         return res.status(404).send("Users not found");
+    }
+    // Block if connection already exists (ACCEPTED or REQUESTED)
+    const existing = await db.connections.findOne({
+        where: { from: req.params.from, to: req.params.to, status: [util.ConnectionStatus.ACCEPTED, util.ConnectionStatus.REQUESTED] }
+    });
+    if (existing) {
+        return res.status(409).send({ errCode: 11, errDesc: 'Connection already exists or pending' });
     }
     await db.connections.create({ from: req.params.from, to: req.params.to, status: util.ConnectionStatus.REQUESTED });
     // Notify the parent of the recipient child
@@ -131,8 +146,12 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
         // System messages to both users
         const toNick = await util.getNickByID(c1.to);
         const fromNick = await util.getNickByID(c1.from);
-        await sendSystemMessage(c1.from, `You are now connected with ${toNick}`);
-        await sendSystemMessage(c1.to, `You are now connected with ${fromNick}`);
+        try {
+            await sendSystemMessage(c1.from, `You are now connected with ${toNick}`);
+            await sendSystemMessage(c1.to, `You are now connected with ${fromNick}`);
+        } catch (e) {
+            // Non-blocking: log but don't fail the request
+        }
         res.sendStatus(204);
     } else if (req.body.status == util.ConnectionStatus.REJECTED) {
         await c.update({ status: req.body.status });
