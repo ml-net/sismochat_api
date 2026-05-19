@@ -13,17 +13,24 @@
 - Delete branch after merge
 - Never amend commits — use new commits (PR history shows all changes, squash merges them)
 
+## Commit Messages
+- Subject: concise, lowercase, no period (enforced by commitlint)
+- Body: optional, 1-2 lines max if needed for context
+- Do NOT put `Closes #N` in commit messages — put it in the PR description
+- The PR description is the right place for details and issue references
+
 ## Pull Requests
 - Always create as draft (--draft), wait for explicit approval before marking ready and merging
 - Always assign to @me (--assignee @me)
 - Wait for CI to pass before merging
 - Do NOT commit and push automatically — always ask for confirmation first
+- Use `Closes #N` in PR description for auto-closing issues on merge
 - Before finalizing, check if changes impact documentation (Swagger, README, ADRs, issue comments) and update accordingly
 
 ## Issues
 - Every task should be tracked as a GitHub issue before working on it
 - Assign issue to @me before starting work
-- Reference issue in commit message (Closes #N)
+- Add implementation details as comments on the issue (not in commit messages)
 
 ## CI/CD
 - GitHub Actions runs tests on Node 18 + 20

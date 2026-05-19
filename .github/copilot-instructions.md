@@ -46,16 +46,17 @@ Notes: There is no dedicated "lint" script. Commit messages are validated with `
 - Language: English for commit messages, PR descriptions, code comments and documentation; Italian is acceptable for conversations.
 - Git workflow: never push directly to `main`; work on feature branches; Conventional Commits enforced (commitlint + husky); allowed types: feat, fix, refactor, docs, chore, test, style, perf; squash-merge PRs and delete branches after merge.
 - Pull Requests: assign to @me, wait for CI to pass before merging, and do not use automated commit+push without confirmation.
-- Issues: track every task as a GitHub issue, assign before starting, and reference issue in commit message (e.g., `Closes #N`).
+- Issues: track every task as a GitHub issue, assign before starting, and add implementation details as comments on the issue (not in commit messages).
+- Commit messages: concise subject (lowercase, no period), optional 1-2 line body for context. Do NOT put `Closes #N` in commit messages — put it in the PR description.
 - CI/CD: GitHub Actions runs tests on Node 18 and 20; `JWT_SECRET` is provided from GitHub Secrets and must never be hardcoded.
 - Architecture decisions recorded here: the server acts as a temporary message relay (not the single source of truth); the client is the source of truth for messages; SQLite is used for low-volume production as a relay pattern; end-to-end encryption uses RSA so the server cannot read message contents.
 
 ## Copilot PR/branch workflow
 - Branch naming: use the pattern `type/issue-short-desc` (e.g., `feat/123-add-auth`). Include the issue number in the branch name and PR title.
 - Pre-PR checklist: run `npm install`; if you changed DB schema run `npm run migrate`; run `npm test` (or `npx jest <file>` for a single test); if you changed routes run `npm run swagger-autogen`. Verify no secrets are added. Check if changes impact documentation (Swagger, README, ADRs, issue comments) and update accordingly.
-- PR creation: open a draft PR with an English description, reference the issue (`Closes #N`), assign to @me, add relevant labels, and wait for CI to pass before marking as ready for review.
+- PR creation: open a draft PR with an English description, use `Closes #N` in the PR description (not in commit messages) for auto-closing issues, assign to @me, add relevant labels, and wait for CI to pass before marking as ready for review.
 - Merge: use squash merge into `main`, delete the branch after merge.
-- Copilot-specific rules: never push directly to `main`; when proposing changes create a branch and PR; do not auto-merge; ensure commit messages follow Conventional Commits; never commit secrets or hard-coded secrets (JWT_SECRET must come from environment/secrets); always create PRs as draft (mark ready only after explicit approval); never amend commits — use new commits (PR history shows all changes, squash merges them).
+- Copilot-specific rules: never push directly to `main`; when proposing changes create a branch and PR; do not auto-merge; ensure commit messages follow Conventional Commits (concise subject, optional 1-2 line body, no `Closes #N`); never commit secrets or hard-coded secrets (JWT_SECRET must come from environment/secrets); always create PRs as draft (mark ready only after explicit approval); never amend commits — use new commits (PR history shows all changes, squash merges them); put `Closes #N` in PR description only.
 
 --
 Generated from repository files: README.md, CONTRIBUTING.md, package.json, app.js, server.js, routes/, models/, tests/, swagger.js, .kiro/steering/conventions.md
