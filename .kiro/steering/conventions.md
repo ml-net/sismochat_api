@@ -15,7 +15,8 @@
 
 ## Commit Messages
 - Subject: concise, lowercase, no period (enforced by commitlint)
-- Body: optional, 1-2 lines max if needed for context
+- Subject ONLY — no body, no bullet points, no details
+- Implementation details go as comments on the GitHub issue, NOT in commits
 - Do NOT put `Closes #N` in commit messages — put it in the PR description
 - The PR description is the right place for details and issue references
 
@@ -35,7 +36,7 @@
 ## CI/CD
 - GitHub Actions runs tests on Node 18 + 20
 - JWT_SECRET comes from GitHub Secrets, never hardcoded
-- Update CHANGELOG.md when tagging a new release
+- CHANGELOG: update as the last commit in the feature PR, just before merge. Then tag on main after merge.
 
 ## Architecture Decisions
 - Server is a temporary message relay (not persistent store)
