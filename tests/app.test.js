@@ -83,6 +83,30 @@ describe('Parent endpoint', () => {
         );
     });
 
+    it('Create a parent with invalid email should return 400 with descriptive error', () => {
+        return (
+            request(app)
+                .post('/api/v1/parent')
+                .send({ email: 'notanemail', pwd: 'validpwd' })
+                .expect(400)
+                .then((res) => {
+                    expect(res.body.errDesc).toContain('Valid email required');
+                })
+        );
+    });
+
+    it('Create a parent with short password should return 400 with descriptive error', () => {
+        return (
+            request(app)
+                .post('/api/v1/parent')
+                .send({ email: 'test@valid.com', pwd: '12' })
+                .expect(400)
+                .then((res) => {
+                    expect(res.body.errDesc).toContain('Password must be at least 6 characters');
+                })
+        );
+    });
+
     it('GET parent without auth should return 401', () => {
         return (
             request(app)
