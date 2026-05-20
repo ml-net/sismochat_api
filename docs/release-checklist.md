@@ -12,16 +12,24 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 2.3 Register parent with short password → descriptive error
 - [ ] 2.4 Login parent (correct credentials)
 - [ ] 2.5 Login parent (wrong credentials) → error
-- [ ] 2.6 Create child user (from parent dashboard)
-- [ ] 2.7 Login as child (from user select)
-- [ ] 2.8 Login as __parent__ virtual user
+- [ ] 2.6 Change password (from parent dashboard)
+- [ ] 2.7 Password reset request → email/OTP received
+- [ ] 2.8 Password reset confirm with valid OTP
+- [ ] 2.9 Create child user (from parent dashboard)
+- [ ] 2.10 Login as child (from user select)
+- [ ] 2.11 Login as __parent__ virtual user
+- [ ] 2.12 Logout parent
+- [ ] 2.13 Logout child
 
 ## 3. Discovery & Connections
 - [ ] 3.1 Discover parent by email
 - [ ] 3.2 View discovered parent's children
 - [ ] 3.3 Request connection between two children
 - [ ] 3.4 Approve connection (from recipient's parent)
-- [ ] 3.5 Both children see each other in "My Contacts"
+- [ ] 3.5 Reject connection (from recipient's parent)
+- [ ] 3.6 Both children see each other in "My Contacts"
+- [ ] 3.7 View sent connection requests with status
+- [ ] 3.8 Duplicate connection request → error
 
 ## 4. Messaging — Text
 - [ ] 4.1 Send text message
@@ -66,3 +74,6 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 10.2 Message to non-existent user → error
 - [ ] 10.3 Login with wrong credentials → clear error message
 - [ ] 10.4 Duplicate parent registration → error
+- [ ] 10.5 Edit child nickname
+- [ ] 10.6 Delete child → connections removed, system message sent to contacts
+- [ ] 10.7 Rate limiting on auth endpoints (too many attempts → 429)
