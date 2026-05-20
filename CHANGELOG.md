@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.6.0] - 2026-05-20 — Multimedia
+
+### Added
+- Emoji assets endpoint `GET /api/v1/assets/emojis` — server-authoritative emoji list (#125)
+- Sticker assets endpoint `GET /api/v1/assets/stickers` — predefined sticker set (#125)
+- Message type support — `type` field on message send (sticker, audio) (#74, #73)
+- Parental permissions system — JSON permissions on users, server enforces per message type (#128)
+- Audio message support — body size limit increased to 500kb (#129)
+- ADR 008 — multimedia messaging strategy
+
+### Changed
+- Body parser limit increased from 100kb to 500kb
+- `.gitignore` updated to track `data/*.json` resource files
+
 ## [v0.5.1] - 2026-05-19 — POC test fixes
 
 ### Fixed
