@@ -25,7 +25,7 @@ const authLimiter = rateLimit({
 });
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '500kb' }));
 
 // API v1 router
 const v1 = express.Router();
