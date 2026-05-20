@@ -106,8 +106,8 @@ router.post('/', authenticate, authorize('User'), [
     if (msgType !== 'user' && msgType !== 'system') {
         const sender = await db.users.findByPk(fromID);
         const receiver = await db.users.findByPk(toID);
-        const senderPerms = sender.permissions || {};
-        const receiverPerms = receiver.permissions || {};
+        const senderPerms = typeof sender.permissions === 'string' ? JSON.parse(sender.permissions) : (sender.permissions || {});
+        const receiverPerms = typeof receiver.permissions === 'string' ? JSON.parse(receiver.permissions) : (receiver.permissions || {});
         if (senderPerms[msgType] === false) {
             return res.status(403).send({ msg: 'You cannot send this message type' });
         }
