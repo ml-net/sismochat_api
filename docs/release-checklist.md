@@ -13,13 +13,20 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 2.4 Login parent (correct credentials)
 - [ ] 2.5 Login parent (wrong credentials) → error
 - [ ] 2.6 Change password (from parent dashboard)
-- [ ] 2.7 Password reset request → email/OTP received
-- [ ] 2.8 Password reset confirm with valid OTP
-- [ ] 2.9 Create child user (from parent dashboard)
-- [ ] 2.10 Login as child (from user select)
-- [ ] 2.11 Login as __parent__ virtual user
-- [ ] 2.12 Logout parent
-- [ ] 2.13 Logout child
+- [ ] 2.7 Create child user (from parent dashboard)
+- [ ] 2.8 Login as child (from user select)
+- [ ] 2.9 Login as __parent__ virtual user
+- [ ] 2.10 Logout parent
+- [ ] 2.11 Logout child
+
+## 2b. Password Reset
+- [ ] 2b.1 Request reset → confirmation message shown
+- [ ] 2b.2 Email with OTP arrives at destination
+- [ ] 2b.3 Confirm reset with valid OTP → password changed
+- [ ] 2b.4 Confirm reset with invalid OTP → error
+- [ ] 2b.5 Login with new password after reset
+- [ ] 2b.6 Too many reset requests → rate limit error (429)
+- [ ] 2b.7 Request reset for non-existent email → same response (no info leak)
 
 ## 3. Discovery & Connections
 - [ ] 3.1 Discover parent by email
