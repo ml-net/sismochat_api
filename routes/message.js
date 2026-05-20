@@ -81,7 +81,7 @@ router.post('/', authenticate, authorize('User'), [
     /* #swagger.responses[404] = { description: 'User not found' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
+        return res.status(400).json({ errCode: 4, errDesc: errors.array().map(e => e.msg).join(', '), details: errors.array() });
     }
     const fromID = req.user.user;
     const toID = req.body.to;

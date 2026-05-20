@@ -48,7 +48,7 @@ router.post('/', [
     /* #swagger.responses[400] = { description: 'Email already exists or invalid input' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
+        return res.status(400).json({ errCode: 4, errDesc: errors.array().map(e => e.msg).join(', '), details: errors.array() });
     }
     try {
         const found = await util.parentEmailExists(req.body.email);
@@ -89,7 +89,7 @@ router.patch('/password', authenticate, [
     /* #swagger.responses[401] = { description: 'Old password incorrect' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
+        return res.status(400).json({ errCode: 4, errDesc: errors.array().map(e => e.msg).join(', '), details: errors.array() });
     }
     const parent = await db.parents.findByPk(req.user.user);
     if (!parent) {
