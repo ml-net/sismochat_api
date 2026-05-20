@@ -1,0 +1,17 @@
+[
+  { "id": "happy", "label": "Happy", "emoji": "😄" },
+  { "id": "love", "label": "Love", "emoji": "😍" },
+  { "id": "laugh", "label": "Laugh", "emoji": "🤣" },
+  { "id": "cool", "label": "Cool", "emoji": "😎" },
+  { "id": "sad", "label": "Sad", "emoji": "😢" },
+  { "id": "angry", "label": "Angry", "emoji": "😡" },
+  { "id": "thumbsup", "label": "Thumbs Up", "emoji": "👍" },
+  { "id": "heart", "label": "Heart", "emoji": "❤️" },
+  { "id": "fire", "label": "Fire", "emoji": "🔥" },
+  { "id": "party", "label": "Party", "emoji": "🎉" },
+  { "id": "star", "label": "Star", "emoji": "⭐" },
+  { "id": "cat", "label": "Cat", "emoji": "🐱" },
+  { "id": "dog", "label": "Dog", "emoji": "🐶" },
+  { "id": "bear", "label": "Bear", "emoji": "🐻" },
+  { "id": "rainbow", "label": "Rainbow", "emoji": "🌈" }
+]

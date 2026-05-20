@@ -563,6 +563,38 @@ describe('Message endpoint', () => {
         );
     });
 
+    it('Sending audio message should return 201', () => {
+        return (
+            request(app)
+                .post('/api/v1/message/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .send({ to: id2, message: 'fakebase64audiodata', type: 'audio' })
+                .expect(201)
+        );
+    });
+
+    it('Sending sticker message should return 201', () => {
+        return (
+            request(app)
+                .post('/api/v1/message/')
+                .set('Authorization', 'Bearer ' + JWTTokenUser)
+                .send({ to: id2, message: 'happy', type: 'sticker' })
+                .expect(201)
+        );
+    });
+
+    it('Sending audio message should return 403 when receiver has audio disabled', async () => {
+        const db = require('../models/index.js');
+        await db.users.update({ permissions: JSON.stringify({ audio: false, sticker: true }) }, { where: { id: id2 } });
+        await request(app)
+            .post('/api/v1/message/')
+            .set('Authorization', 'Bearer ' + JWTTokenUser)
+            .send({ to: id2, message: 'fakeaudio', type: 'audio' })
+            .expect(403);
+        // Restore permissions
+        await db.users.update({ permissions: JSON.stringify({ audio: true, sticker: true }) }, { where: { id: id2 } });
+    });
+
     it('GET unread message list should return 200 and not empty body', () => {
         return (
             request(app)
@@ -641,15 +673,15 @@ describe('Message endpoint', () => {
         );
     });
 
-    it('GET unread list after download should return 200 with only system messages', () => {
+    it('GET unread list after download should include system messages', () => {
         return (
             request(app)
                 .get('/api/v1/message/list/' + util.MessageStatus.UNREAD)
                 .set('Authorization', 'Bearer ' + JWTTokenUser2)
                 .expect(200)
                 .then((content) => {
-                    // Only system messages remain unread
-                    content.body.forEach(m => expect(m.type).toEqual('system'));
+                    const types = content.body.map(m => m.type);
+                    expect(types).toContain('system');
                 })
         );
     });

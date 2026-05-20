@@ -30,4 +30,5 @@ jspm_packages/
 .env.test
 
 # data directory for sqlite database
-data/
+data/*
+!data/*.json
