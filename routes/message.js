@@ -101,7 +101,7 @@ router.post('/', authenticate, authorize('User'), [
     if (!req.body.message.trim()) {
         return res.status(400).send({ msg: 'No empty body allowed' });
     }
-    const msgData = { from: fromID, to: toID, body: req.body.message, status: util.MessageStatus.UNREAD };
+    const msgData = { from: fromID, to: toID, body: req.body.message, status: util.MessageStatus.UNREAD, type: req.body.type || 'user' };
     const msg1 = await db.messages.create(msgData);
     notify(toID, { type: 'new_message', from: fromID });
     res.status(201).send({ messageID: msg1.id });
