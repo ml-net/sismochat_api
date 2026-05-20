@@ -15,7 +15,7 @@ Milestone v0.6.0 addresses multimedia messaging. We evaluated three approaches f
 | Emoji | ✅ Accepted | Unicode characters, no server changes needed for messaging |
 | Stickers | ✅ Accepted | Predefined asset pack, controlled set, message type field |
 | Images | ❌ Rejected | Violates parental control, breaks E2E or relay model |
-| Audio PTT | ⏸️ Deferred | Requires microphone access — parental control implications to evaluate |
+| Audio PTT | ✅ Accepted | Walkie-talkie style, max 20s, live only, permission-gated |
 
 ## Emoji
 
@@ -57,15 +57,42 @@ See detailed rationale:
 2. **E2E encryption conflict** — parental review would break E2E model (see ADR 001)
 3. **Relay architecture mismatch** — base64 images (1-2 MB) impractical for SQLite relay (see ADR 004)
 
-## Audio PTT — deferred
+## Audio PTT — accepted
 
-Evaluated but not included in v0.6.0. Key concerns:
+Short voice messages (push-to-talk, walkie-talkie style). Accepted with constraints:
 
-- **Microphone access** — less problematic than camera/gallery (doesn't expose existing content on device), but still a permission that parents may want to control
-- **Payload size** — 60s Opus audio ≈ 60-120KB base64, manageable but requires body size limit adjustment
-- **E2E on large payloads** — needs verification of current RSA/AES hybrid encryption on larger data
+- **Max duration: 20 seconds** — this is a walkie-talkie, not a voice recorder
+- **Live recording only** — no file upload from device storage
+- **Microphone permission required** — acceptable because it doesn't expose existing device content (unlike camera/gallery)
+- **Subject to parental permissions** — parent can disable audio for a child
 
-Will be revisited after sticker implementation, with a separate ADR if accepted.
+Key properties:
+- Client records via MediaRecorder API, encodes as base64
+- Sent as message with `type: 'audio'`, body = base64 audio data (encrypted)
+- Server body size limit must be increased (~200KB for 20s Opus)
+- E2E encryption applies identically (server sees only encrypted blob)
+
+## Parental permissions
+
+A JSON `permissions` field on the `users` model controls which message types a child can send/receive. Default: all enabled.
+
+```json
+{ "audio": true, "sticker": true }
+```
+
+### Rules
+- `type: 'user'` (text + emoji) and `type: 'system'` — always allowed, no permission check
+- `type: 'sticker'` — controlled by `sticker` permission
+- `type: 'audio'` — controlled by `audio` permission
+- **Check applies to both sender AND receiver** — if either party lacks the permission, the server rejects with 403
+- Message is never created or relayed if permission check fails
+
+### Sender experience on rejection
+The server returns an error, the client shows a message (e.g., "this contact cannot receive audio messages"). No message is saved locally — the send never succeeded.
+
+### Rollout strategy
+- v0.6.0: permissions field added with all defaults enabled, server enforces checks, no parent UI exposed
+- Future release: parent UI to toggle permissions per child
 
 ## Update strategy
 

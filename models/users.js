@@ -13,7 +13,11 @@ module.exports = (sequelize, DataTypes) => {
   users.init({
     nick: DataTypes.STRING,
     parent: DataTypes.UUID,
-    key: DataTypes.STRING
+    key: DataTypes.STRING,
+    permissions: {
+      type: DataTypes.JSON,
+      defaultValue: { audio: true, sticker: true }
+    }
   }, {
     sequelize,
     modelName: 'users',

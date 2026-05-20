@@ -101,7 +101,21 @@ router.post('/', authenticate, authorize('User'), [
     if (!req.body.message.trim()) {
         return res.status(400).send({ msg: 'No empty body allowed' });
     }
-    const msgData = { from: fromID, to: toID, body: req.body.message, status: util.MessageStatus.UNREAD, type: req.body.type || 'user' };
+    // Permission check for non-text message types
+    const msgType = req.body.type || 'user';
+    if (msgType !== 'user' && msgType !== 'system') {
+        const sender = await db.users.findByPk(fromID);
+        const receiver = await db.users.findByPk(toID);
+        const senderPerms = sender.permissions || {};
+        const receiverPerms = receiver.permissions || {};
+        if (senderPerms[msgType] === false) {
+            return res.status(403).send({ msg: 'You cannot send this message type' });
+        }
+        if (receiverPerms[msgType] === false) {
+            return res.status(403).send({ msg: 'Recipient cannot receive this message type' });
+        }
+    }
+    const msgData = { from: fromID, to: toID, body: req.body.message, status: util.MessageStatus.UNREAD, type: msgType };
     const msg1 = await db.messages.create(msgData);
     notify(toID, { type: 'new_message', from: fromID });
     res.status(201).send({ messageID: msg1.id });
