@@ -33,7 +33,7 @@ const discoveryLimiter = rateLimit({
 });
 
 router.post('/', [
-    body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
+    body('email').isEmail().withMessage('Valid email required').trim(),
     body('pwd').notEmpty().isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], async (req, res) => {
     // #swagger.tags = ['Parents']
@@ -180,7 +180,7 @@ router.get('/:email', authenticate, discoveryLimiter, [
 });
 
 router.post('/reset-request', resetRequestLimiter, [
-    body('email').isEmail().normalizeEmail()
+    body('email').isEmail().trim()
 ], async (req, res) => {
     // #swagger.tags = ['Parents']
     // #swagger.summary = 'Request password reset OTP'
@@ -207,7 +207,7 @@ router.post('/reset-request', resetRequestLimiter, [
 });
 
 router.post('/reset', [
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail().trim(),
     body('otp').isString().isLength({ min: 6, max: 6 }),
     body('newPassword').notEmpty().isLength({ min: 6 })
 ], async (req, res) => {
