@@ -83,9 +83,20 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 10.1 Two different browsers/devices communicate
 - [ ] 10.2 WebSocket notification arrives in real-time
 
-## 11. Edge Cases & Errors
-- [ ] 11.1 Login with wrong credentials → clear error message
-- [ ] 11.2 Duplicate parent registration → error
-- [ ] 11.3 Edit child nickname → updated in login select
-- [ ] 11.4 Delete child → connections removed, system message sent to contacts
-- [ ] 11.5 Rate limiting on auth endpoints (too many attempts → 429)
+## 11. Client-Seeded Recovery
+- [ ] 12.1 State certificate saved in localStorage after parent login
+- [ ] 12.2 State certificate updated after child creation
+- [ ] 12.3 State certificate updated after connection approval
+- [ ] 12.4 After DB wipe: parent login triggers automatic restore
+- [ ] 12.5 After restore: parent dashboard shows children correctly
+- [ ] 12.6 After restore: child login works with existing credentials
+- [ ] 12.7 After restore: contacts list shows connected users
+- [ ] 12.8 Restore with invalid certificate → error message (no loop)
+- [ ] 12.9 Restore without certificate → normal login error
+
+## 12. Edge Cases & Errors
+- [ ] 12.1 Login with wrong credentials → clear error message
+- [ ] 12.2 Duplicate parent registration → error
+- [ ] 12.3 Edit child nickname → updated in login select
+- [ ] 12.4 Delete child → connections removed, system message sent to contacts
+- [ ] 12.5 Rate limiting on auth endpoints (too many attempts → 429)
