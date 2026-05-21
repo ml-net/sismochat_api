@@ -65,7 +65,7 @@ router.get("/:msgID", authenticate, authorize('User'), async (req, res) => {
 
 router.post('/', authenticate, authorize('User'), [
     body('to').notEmpty().trim(),
-    body('message').notEmpty()
+    body('message').notEmpty().withMessage('Message cannot be empty')
 ], async (req, res) => {
     // #swagger.tags = ['Messages']
     // #swagger.summary = 'Send a message'
