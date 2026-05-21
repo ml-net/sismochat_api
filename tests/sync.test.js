@@ -115,4 +115,33 @@ describe('Sync endpoints', () => {
         expect(conn).not.toBeNull();
         expect(conn.status).toBe(0);
     });
+
+    it('POST /sync/restore should create inverse when restoring outbound and other user exists', async () => {
+        // Our parent has a connection FROM our child TO other child
+        const parentWithOutbound = {
+            type: 'parent',
+            id: '11111111-2222-3333-4444-555555555555',
+            email: 'outbound@test.com',
+            pwdHash: '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012',
+            children: [{
+                id: '66666666-7777-8888-9999-aaaaaaaaaaaa',
+                nick: 'OutboundChild',
+                key: '-----BEGIN PUBLIC KEY-----\ntest2\n-----END PUBLIC KEY-----\n',
+                permissions: { audio: true, sticker: true },
+                deviceId: '77777777-8888-9999-aaaa-bbbbbbbbbbbb',
+                connections: [{ from: '66666666-7777-8888-9999-aaaaaaaaaaaa', to: mockParentCert.children[0].id, status: 0 }]
+            }],
+            issuedAt: new Date().toISOString()
+        };
+        // mockParentCert's child already exists from earlier tests
+        // Restore parent with outbound connection — other user exists → should create inverse
+        await request(app)
+            .post('/api/v1/sync/restore')
+            .send({ stateCert: jwt.sign(parentWithOutbound, secret) })
+            .expect(201);
+        // Verify inverse: from mockChild to outboundChild
+        const conn = await db.connections.findOne({ where: { from: mockParentCert.children[0].id, to: '66666666-7777-8888-9999-aaaaaaaaaaaa' } });
+        expect(conn).not.toBeNull();
+        expect(conn.status).toBe(0);
+    });
 });
