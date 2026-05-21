@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.7.4] - 2026-05-21 — Final v0.7 stabilization
+
+### Fixed
+- Package.json version aligned with git tags
+- Restore creates bidirectional connections regardless of restore order
+
+### Added
+- Test for reverse-order restore scenario (101 tests total)
+
 ## [v0.7.2] - 2026-05-21 — Restore connections fix
 
 ### Fixed
