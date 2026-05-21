@@ -426,7 +426,7 @@ describe('User endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(201)
                 .then((response) => {
-                    deviceId1 = response.text
+                    deviceId1 = response.body.deviceId
                 })
             &&
             request(app)
@@ -434,7 +434,7 @@ describe('User endpoint', () => {
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(201)
                 .then((response) => {
-                    deviceId2 = response.text
+                    deviceId2 = response.body.deviceId
                 })
         );
     });
