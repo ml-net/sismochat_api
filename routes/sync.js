@@ -71,6 +71,16 @@ router.post('/restore', async (req, res) => {
                     defaults: { id: uuid.v4(), from: conn.from, to: conn.to, status: conn.status }
                 });
                 if (connRecord.status !== conn.status) await connRecord.update({ status: conn.status });
+                // Create inverse connection if the other user exists
+                if (conn.status === 0) {
+                    const otherUser = await db.users.findByPk(conn.to);
+                    if (otherUser) {
+                        await db.connections.findOrCreate({
+                            where: { from: conn.to, to: conn.from },
+                            defaults: { id: uuid.v4(), from: conn.to, to: conn.from, status: 0 }
+                        });
+                    }
+                }
             }
         }
 
