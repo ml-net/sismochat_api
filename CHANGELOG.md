@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.7.2] - 2026-05-21 — Restore connections fix
+
+### Fixed
+- Restore now creates inverse connections (if A→B exists, creates B→A for restored children)
+- Restore returns fresh stateCert with complete state (including new inverse connections)
+
 ## [v0.7.1] - 2026-05-21 — Recovery fix
 
 ### Fixed
