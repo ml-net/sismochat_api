@@ -4,6 +4,7 @@ const url = require('url');
 
 const secret = process.env.JWT_SECRET;
 const clients = new Map(); // userId -> Set of ws connections
+const HEARTBEAT_INTERVAL = 30000; // 30s
 
 function setupWebSocket(server) {
     const wss = new WebSocketServer({ server, path: '/ws' });
@@ -26,6 +27,9 @@ function setupWebSocket(server) {
             const userId = decoded.user;
             ws.userId = userId;
             ws.profile = decoded.profile;
+            ws.isAlive = true;
+
+            ws.on('pong', () => { ws.isAlive = true; });
 
             if (!clients.has(userId)) {
                 clients.set(userId, new Set());
@@ -43,6 +47,19 @@ function setupWebSocket(server) {
             });
         });
     });
+
+    const interval = setInterval(() => {
+        wss.clients.forEach(ws => {
+            if (!ws.isAlive) return ws.terminate();
+            ws.isAlive = false;
+            ws.ping();
+            // Send application-level heartbeat for clients to detect activity
+            if (ws.readyState === 1) ws.send(JSON.stringify({ type: 'ping' }));
+        });
+    }, HEARTBEAT_INTERVAL);
+
+    wss.on('close', () => clearInterval(interval));
+    wss.heartbeatInterval = interval;
 
     return wss;
 }
