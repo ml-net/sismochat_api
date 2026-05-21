@@ -34,7 +34,9 @@ router.post('/', authenticate, authorize('Parent'), async (req, res) => {
     if (req.body.pk && req.body.pk != '') {
         const user = await db.users.create({ nick: req.body.nick, key: req.body.pk.replace(/\\n/g, '\n'), parent: req.user.user });
         await connectVirtualUser(req.user.user, user.id);
-        return res.status(201).json({ ID: user.id, keys: { public: req.body.pk } });
+        const { generateStateCert } = require('../services/stateCert');
+        const stateCert = await generateStateCert(req.user.user);
+        return res.status(201).json({ ID: user.id, keys: { public: req.body.pk }, stateCert });
     }
     // Generate key pair if no public key provided
     generateKeyPair('rsa', {
@@ -45,7 +47,9 @@ router.post('/', authenticate, authorize('Parent'), async (req, res) => {
         if (err) return res.status(400).send(err);
         const user = await db.users.create({ nick: req.body.nick, key: publicKey.replace(/\\n/g, '\n'), parent: req.user.user });
         await connectVirtualUser(req.user.user, user.id);
-        res.status(201).json({ ID: user.id, keys: { private: privateKey, public: publicKey } });
+        const { generateStateCert } = require('../services/stateCert');
+        const stateCert = await generateStateCert(req.user.user);
+        res.status(201).json({ ID: user.id, keys: { private: privateKey, public: publicKey }, stateCert });
     });
 });
 

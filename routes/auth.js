@@ -26,8 +26,10 @@ router.post('/parent', [
     }
     const data = await parentAuth(req.body.email, req.body.pwd);
     if (data.esito === 0) {
-        jwt.sign({ user: data.userid, email: req.body.email, profile: 'Parent' }, secret, { expiresIn: "3600s" }, (err, token) => {
-            res.json({ token });
+        jwt.sign({ user: data.userid, email: req.body.email, profile: 'Parent' }, secret, { expiresIn: "3600s" }, async (err, token) => {
+            const { generateStateCert } = require('../services/stateCert');
+            const stateCert = await generateStateCert(data.userid);
+            res.json({ token, stateCert });
         });
     } else if (data.esito === 2) {
         res.status(404).send({ errCode: 3, errDesc: "User unknown" });

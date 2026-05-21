@@ -198,13 +198,16 @@ describe('Parent endpoint', () => {
         );
     });
 
-    it('Change password with correct old password should return 204', () => {
+    it('Change password with correct old password should return 200 with stateCert', () => {
         return (
             request(app)
                 .patch('/api/v1/parent/password')
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .send({ oldPassword: newParent.pwd, newPassword: 'newpassword123' })
-                .expect(204)
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.stateCert).toBeDefined();
+                })
         );
     });
 
@@ -547,7 +550,7 @@ describe('Message endpoint', () => {
                         .patch('/api/v1/connection/' + conn.id)
                         .set('Authorization', 'Bearer ' + JWTtokenParent)
                         .send({ status: 0 })
-                        .expect(204);
+                        .expect(200);
                 })
         );
     });

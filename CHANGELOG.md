@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.7.0] - 2026-05-21 — Resilience
+
+### Added
+- Client-seeded recovery: server generates signed state certificates on state changes (#94)
+- `POST /api/v1/sync/restore` endpoint for automatic state recovery after DB wipe
+- `GET /api/v1/sync/cert` endpoint for on-demand certificate retrieval
+- State certificate included in parent login response
+- State certificate pushed via WebSocket on connection approval (for both parents)
+- WebSocket ping/pong heartbeat every 30s for connection reliability (#134)
+- Release checklist updated with recovery section
+
 ## [v0.6.2] - 2026-05-21 — Audio and validation fixes
 
 ### Fixed
