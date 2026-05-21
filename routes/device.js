@@ -19,7 +19,9 @@ router.post('/:userid', authenticate, authorize('Parent'), async (req, res) => {
         return res.status(400).send("User has Device registered yet");
     }
     const device = await db.devices.create({ userid: req.params.userid });
-    res.status(201).send(device.id);
+    const { generateStateCert } = require('../services/stateCert');
+    const stateCert = await generateStateCert(req.user.user);
+    res.status(201).json({ deviceId: device.id, stateCert });
 });
 
 router.delete('/:userid', authenticate, authorize('Parent'), async (req, res) => {
