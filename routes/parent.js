@@ -65,9 +65,13 @@ router.post('/', [
             const virtualUser = await db.users.create({ nick: PARENT_USER_NICK, key: publicKey, parent: parent.id });
             const device = await db.devices.create({ userid: virtualUser.id });
 
+            const { generateStateCert } = require('../services/stateCert');
+            const stateCert = await generateStateCert(parent.id);
+
             res.status(201).json({
                 ID: parent.id,
-                virtualUser: { id: virtualUser.id, deviceId: device.id, keys: { public: publicKey, private: privateKey } }
+                virtualUser: { id: virtualUser.id, deviceId: device.id, keys: { public: publicKey, private: privateKey } },
+                stateCert
             });
         } else {
             res.status(400).send({ errCode: 2, errDesc: "Exists an User with this email" });
@@ -104,7 +108,9 @@ router.patch('/password', authenticate, [
     }
     const hash = await bcrypt.hash(req.body.newPassword, SALT_ROUNDS);
     await parent.update({ pwd: hash });
-    res.sendStatus(204);
+    const { generateStateCert } = require('../services/stateCert');
+    const stateCert = await generateStateCert(req.user.user);
+    res.status(200).json({ stateCert });
 });
 
 router.get('/me/connections/sent', authenticate, authorize('Parent'), async (req, res) => {

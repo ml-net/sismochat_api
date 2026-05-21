@@ -152,7 +152,14 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
         } catch (e) {
             // Non-blocking: log but don't fail the request
         }
-        res.sendStatus(204);
+        const { generateStateCert } = require('../services/stateCert');
+        const stateCert = await generateStateCert(req.user.user);
+        // Also generate cert for the other parent (notify via WS)
+        if (fromUser) {
+            const otherCert = await generateStateCert(fromUser.parent);
+            notify(fromUser.parent, { type: 'state_cert', stateCert: otherCert });
+        }
+        res.status(200).json({ stateCert });
     } else if (req.body.status == util.ConnectionStatus.REJECTED) {
         await c.update({ status: req.body.status });
         // Notify the parent of the requester
