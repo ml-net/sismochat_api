@@ -47,14 +47,23 @@ router.post('/restore', async (req, res) => {
             return res.status(409).json({ errCode: 2, errDesc: 'Email already registered by another account' });
         }
 
-        // Upsert parent
-        await db.parents.upsert({ id: payload.id, email: payload.email, pwd: payload.pwdHash });
+        // Restore parent
+        const [parent] = await db.parents.findOrCreate({ where: { id: payload.id }, defaults: { id: payload.id, email: payload.email, pwd: payload.pwdHash } });
+        if (parent.email !== payload.email || parent.pwd !== payload.pwdHash) {
+            await parent.update({ email: payload.email, pwd: payload.pwdHash });
+        }
 
-        // Upsert children, devices, connections
+        // Restore children, devices, connections
         for (const child of payload.children || []) {
-            await db.users.upsert({ id: child.id, nick: child.nick, key: child.key, parent: payload.id, permissions: child.permissions });
+            const [user] = await db.users.findOrCreate({ where: { id: child.id }, defaults: { id: child.id, nick: child.nick, key: child.key, parent: payload.id, permissions: child.permissions } });
+            if (user.nick !== child.nick || user.key !== child.key) {
+                await user.update({ nick: child.nick, key: child.key, permissions: child.permissions });
+            }
             if (child.deviceId) {
-                await db.devices.upsert({ id: child.deviceId, userid: child.id });
+                const existingDevice = await db.devices.findByPk(child.deviceId);
+                if (!existingDevice) {
+                    await db.devices.create({ id: child.deviceId, userid: child.id });
+                }
             }
             for (const conn of child.connections || []) {
                 const [connRecord] = await db.connections.findOrCreate({
@@ -65,7 +74,20 @@ router.post('/restore', async (req, res) => {
             }
         }
 
-        res.status(201).json({ msg: 'State restored' });
+        // Create inverse connections: if someone has a connection TO our child, ensure our child has one back
+        for (const child of payload.children || []) {
+            const inbound = await db.connections.findAll({ where: { to: child.id, status: 0 } });
+            for (const conn of inbound) {
+                await db.connections.findOrCreate({
+                    where: { from: child.id, to: conn.from },
+                    defaults: { id: uuid.v4(), from: child.id, to: conn.from, status: 0 }
+                });
+            }
+        }
+
+        // Return fresh certificate with complete state
+        const stateCert = await generateStateCert(payload.id);
+        res.status(201).json({ msg: 'State restored', stateCert });
     } catch (e) {
         res.status(500).json({ errCode: -1, errDesc: 'Restore failed' });
     }
