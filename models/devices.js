@@ -13,6 +13,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'devices',
   });
-  devices.beforeCreate(d => d.id = uuid.v4());
+  devices.beforeCreate(d => { if (!d.id) d.id = uuid.v4(); });
   return devices;
 };

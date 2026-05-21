@@ -84,15 +84,17 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 10.2 WebSocket notification arrives in real-time
 
 ## 11. Client-Seeded Recovery
-- [ ] 12.1 State certificate saved in localStorage after parent login
-- [ ] 12.2 State certificate updated after child creation
-- [ ] 12.3 State certificate updated after connection approval
-- [ ] 12.4 After DB wipe: parent login triggers automatic restore
-- [ ] 12.5 After restore: parent dashboard shows children correctly
-- [ ] 12.6 After restore: child login works with existing credentials
-- [ ] 12.7 After restore: contacts list shows connected users
-- [ ] 12.8 Restore with invalid certificate → error message (no loop)
-- [ ] 12.9 Restore without certificate → normal login error
+- [ ] 11.1 State certificate saved in localStorage after parent login
+- [ ] 11.2 State certificate updated after child creation
+- [ ] 11.3 State certificate updated after connection approval
+- [ ] 11.4 After DB wipe: parent login triggers automatic restore
+- [ ] 11.5 After restore: parent dashboard shows children correctly
+- [ ] 11.6 After restore: child login works with existing credentials
+- [ ] 11.7 After restore: contacts list shows connected users
+- [ ] 11.8 Partial restore: contact shows N/D when other parent has not restored yet
+- [ ] 11.9 After full restore from both parents: contacts show correct nicks
+- [ ] 11.10 Restore with invalid certificate → error message (no loop)
+- [ ] 11.11 Restore without certificate → normal login error
 
 ## 12. Edge Cases & Errors
 - [ ] 12.1 Login with wrong credentials → clear error message

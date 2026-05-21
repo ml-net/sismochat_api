@@ -37,6 +37,7 @@
 - GitHub Actions runs tests on Node 18 + 20
 - JWT_SECRET comes from GitHub Secrets, never hardcoded
 - CHANGELOG: update as the last commit in the feature PR, just before merge. Then tag on main after merge.
+- Every merge to main that triggers a deploy MUST have a corresponding version tag.
 
 ## Architecture Decisions
 - Server is a temporary message relay (not persistent store)
