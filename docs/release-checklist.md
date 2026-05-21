@@ -12,7 +12,10 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 2.3 Register parent with short password → descriptive error
 - [ ] 2.4 Login parent (correct credentials)
 - [ ] 2.5 Login parent (wrong credentials) → error
-- [ ] 2.6 Change password (from parent dashboard)
+- [ ] 2.6 Change password (valid old + new password ≥ 6 chars)
+- [ ] 2.6b Change password with wrong old password → error
+- [ ] 2.6c Change password with short new password → error
+- [ ] 2.6d Change password with new = old → error
 - [ ] 2.7 Create child user (from parent dashboard)
 - [ ] 2.8 Login as child (from user select)
 - [ ] 2.9 Login as __parent__ virtual user
@@ -37,13 +40,16 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 3.6 Both children see each other in "My Contacts"
 - [ ] 3.7 View sent connection requests with status
 - [ ] 3.8 Duplicate connection request → error
+- [ ] 3.9 Discovery rate limiting (too many searches → 429)
 
 ## 4. Messaging — Text
 - [ ] 4.1 Send text message
 - [ ] 4.2 Recipient receives message (Refresh inbox)
 - [ ] 4.3 Message appears in local messages for both
 - [ ] 4.4 Withdraw unread message
-- [ ] 4.5 Send to non-connected user → error
+- [ ] 4.5 Withdraw already-read message → error
+- [ ] 4.6 Send to non-existent user → 404
+- [ ] 4.7 Send to existing but non-connected user → 403
 
 ## 5. Messaging — Emoji
 - [ ] 5.1 Emoji picker populates from server (not empty)
