@@ -73,4 +73,46 @@ describe('Sync endpoints', () => {
             .get('/api/v1/sync/cert')
             .expect(401);
     });
+
+    it('POST /sync/restore should return fresh stateCert in response', async () => {
+        const cert = jwt.sign(mockParentCert, secret);
+        const res = await request(app)
+            .post('/api/v1/sync/restore')
+            .send({ stateCert: cert })
+            .expect(201);
+        expect(res.body.stateCert).toBeDefined();
+    });
+
+    it('POST /sync/restore should create inverse connections', async () => {
+        // First restore a parent with a child that has a connection TO our child
+        const otherParent = {
+            type: 'parent',
+            id: 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff',
+            email: 'other@test.com',
+            pwdHash: '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012',
+            children: [{
+                id: 'eeeeeeee-ffff-0000-1111-444444444444',
+                nick: 'OtherChild',
+                key: '-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----\n',
+                permissions: { audio: true, sticker: true },
+                deviceId: 'ffffffff-0000-1111-2222-555555555555',
+                connections: [{ from: 'eeeeeeee-ffff-0000-1111-444444444444', to: mockParentCert.children[0].id, status: 0 }]
+            }],
+            issuedAt: new Date().toISOString()
+        };
+        // Restore other parent first (creates connection TO our child)
+        await request(app)
+            .post('/api/v1/sync/restore')
+            .send({ stateCert: jwt.sign(otherParent, secret) })
+            .expect(201);
+        // Now restore our parent — should create inverse connection
+        const res = await request(app)
+            .post('/api/v1/sync/restore')
+            .send({ stateCert: jwt.sign(mockParentCert, secret) })
+            .expect(201);
+        // Verify inverse connection exists
+        const conn = await db.connections.findOne({ where: { from: mockParentCert.children[0].id, to: 'eeeeeeee-ffff-0000-1111-444444444444' } });
+        expect(conn).not.toBeNull();
+        expect(conn.status).toBe(0);
+    });
 });
