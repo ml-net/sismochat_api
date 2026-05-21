@@ -12,7 +12,8 @@ let port;
 
 beforeAll((done) => {
     server = http.createServer(app);
-    setupWebSocket(server);
+    const wss = setupWebSocket(server);
+    server.wss = wss;
     server.listen(0, () => {
         port = server.address().port;
         done();
@@ -20,6 +21,8 @@ beforeAll((done) => {
 });
 
 afterAll((done) => {
+    clearInterval(server.wss.heartbeatInterval);
+    server.wss.close();
     server.close(done);
 });
 
