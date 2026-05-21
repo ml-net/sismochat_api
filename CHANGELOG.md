@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.6.2] - 2026-05-21 — Audio and validation fixes
+
+### Fixed
+- Body size limit increased to 1mb (20s audio on iOS exceeded 500kb)
+- Empty message validation returns "Message cannot be empty" instead of "Invalid value"
+
 ## [v0.6.1] - 2026-05-21 — Post-release fixes
 
 ### Added
