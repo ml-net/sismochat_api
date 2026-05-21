@@ -42,7 +42,7 @@ app.use('/api/v1', v1);
 app.get('/health', async (_req, res) => {
     try {
         await require('./models').sequelize.authenticate();
-        res.status(200).json({ status: 'ok' });
+        res.status(200).json({ status: 'ok', version: require('./package.json').version });
     } catch (_err) {
         res.status(503).json({ status: 'error', detail: 'database unreachable' });
     }

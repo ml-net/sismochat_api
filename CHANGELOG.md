@@ -4,6 +4,22 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.6.1] - 2026-05-21 — Post-release fixes
+
+### Added
+- Version field in `/health` endpoint response
+- Release verification checklist (`docs/release-checklist.md`)
+- Validation tests for registration (invalid email, short password)
+
+### Fixed
+- Validation errors now return descriptive messages instead of generic "Invalid input"
+- Removed `normalizeEmail()` — email addresses preserved as entered by user
+- Body size limit increased to 500kb (audio messages support)
+
+### Changed
+- Commit conventions updated (subject only, no body)
+- CHANGELOG flow: last commit in feature PR before merge
+
 ## [v0.6.0] - 2026-05-20 — Multimedia
 
 ### Added

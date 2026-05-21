@@ -33,7 +33,7 @@ const discoveryLimiter = rateLimit({
 });
 
 router.post('/', [
-    body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
+    body('email').isEmail().withMessage('Valid email required').trim(),
     body('pwd').notEmpty().isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], async (req, res) => {
     // #swagger.tags = ['Parents']
@@ -48,7 +48,7 @@ router.post('/', [
     /* #swagger.responses[400] = { description: 'Email already exists or invalid input' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
+        return res.status(400).json({ errCode: 4, errDesc: errors.array().map(e => e.msg).join(', '), details: errors.array() });
     }
     try {
         const found = await util.parentEmailExists(req.body.email);
@@ -89,7 +89,7 @@ router.patch('/password', authenticate, [
     /* #swagger.responses[401] = { description: 'Old password incorrect' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errCode: 4, errDesc: "Invalid input", details: errors.array() });
+        return res.status(400).json({ errCode: 4, errDesc: errors.array().map(e => e.msg).join(', '), details: errors.array() });
     }
     const parent = await db.parents.findByPk(req.user.user);
     if (!parent) {
@@ -180,7 +180,7 @@ router.get('/:email', authenticate, discoveryLimiter, [
 });
 
 router.post('/reset-request', resetRequestLimiter, [
-    body('email').isEmail().normalizeEmail()
+    body('email').isEmail().trim()
 ], async (req, res) => {
     // #swagger.tags = ['Parents']
     // #swagger.summary = 'Request password reset OTP'
@@ -207,7 +207,7 @@ router.post('/reset-request', resetRequestLimiter, [
 });
 
 router.post('/reset', [
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail().trim(),
     body('otp').isString().isLength({ min: 6, max: 6 }),
     body('newPassword').notEmpty().isLength({ min: 6 })
 ], async (req, res) => {

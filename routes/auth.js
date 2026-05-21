@@ -6,7 +6,7 @@ const { parentAuth, userAuth } = require('../services/auth.js');
 const secret = process.env.JWT_SECRET;
 
 router.post('/parent', [
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail().trim(),
     body('pwd').notEmpty()
 ], async (req, res) => {
     // #swagger.tags = ['Auth']
