@@ -22,6 +22,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'users',
   });
-  users.beforeCreate(user => user.id = uuid.v4());
+  users.beforeCreate(user => { if (!user.id) user.id = uuid.v4(); });
   return users;
 };

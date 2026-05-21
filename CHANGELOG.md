@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.7.1] - 2026-05-21 — Recovery fix
+
+### Fixed
+- Models `beforeCreate` hooks no longer overwrite explicitly provided IDs (broke restore)
+- Syncing indicator shows blue instead of red during recovery
+
+### Changed
+- Convention: every merge to main must have a version tag
+- Release checklist numbering fixed (sections 11-12)
+
 ## [v0.7.0] - 2026-05-21 — Resilience
 
 ### Added

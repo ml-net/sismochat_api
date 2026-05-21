@@ -17,6 +17,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'parents',
   });
-  parents.beforeCreate(p => p.id = uuid.v4());
+  parents.beforeCreate(p => { if (!p.id) p.id = uuid.v4(); });
   return parents;
 };

@@ -16,6 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'connections',
   });
-  connections.beforeCreate(c => c.id = uuid.v4());
+  connections.beforeCreate(c => { if (!c.id) c.id = uuid.v4(); });
   return connections;
 };

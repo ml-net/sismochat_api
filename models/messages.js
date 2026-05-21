@@ -18,6 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'messages',
   });
-  messages.beforeCreate(m => m.id = uuid.v4());
+  messages.beforeCreate(m => { if (!m.id) m.id = uuid.v4(); });
   return messages;
 };
