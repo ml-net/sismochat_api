@@ -1,7 +1,9 @@
 const router = require('express').Router();
 const { authenticate, authorize } = require('../middleware/auth');
+const { generateKeyPair } = require('crypto');
 const util = require('../util.js');
 const db = require('../models/index.js');
+const { notify } = require('../services/websocket');
 
 router.post('/:userid', authenticate, authorize('Parent'), async (req, res) => {
     // #swagger.tags = ['Devices']
@@ -22,6 +24,60 @@ router.post('/:userid', authenticate, authorize('Parent'), async (req, res) => {
     const { generateStateCert } = require('../services/stateCert');
     const stateCert = await generateStateCert(req.user.user);
     res.status(201).json({ deviceId: device.id, stateCert });
+});
+
+router.put('/:userid', authenticate, authorize('Parent'), async (req, res) => {
+    // #swagger.tags = ['Devices']
+    // #swagger.summary = 'Re-provision device for a user'
+    // #swagger.description = 'Replace existing device with a new one. Preserves userId, connections, and permissions. Updates public key if provided.'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'Device re-provisioned, returns new device ID and keys' } */
+    /* #swagger.responses[403] = { description: 'Not your child' } */
+    /* #swagger.responses[404] = { description: 'User not found' } */
+    const user = await db.users.findByPk(req.params.userid);
+    if (!user) {
+        return res.status(404).send("User not found");
+    }
+    if (user.parent !== req.user.user) {
+        return res.status(403).send({ msg: 'Not your child' });
+    }
+
+    // Delete old device
+    await db.devices.destroy({ where: { userid: req.params.userid } });
+
+    // Create new device
+    const device = await db.devices.create({ userid: req.params.userid });
+
+    // Update public key
+    if (req.body?.pk) {
+        await user.update({ key: req.body.pk.replace(/\\n/g, '\n') });
+        // Notify online contacts of key change
+        const connections = await db.connections.findAll({ where: { from: req.params.userid, status: util.ConnectionStatus.ACCEPTED } });
+        for (const conn of connections) {
+            notify(conn.to, { type: 'key_changed', userId: req.params.userid, key: user.key });
+        }
+        const { generateStateCert } = require('../services/stateCert');
+        const stateCert = await generateStateCert(req.user.user);
+        return res.status(200).json({ deviceId: device.id, keys: { public: req.body.pk }, stateCert });
+    }
+
+    // Generate new key pair if no pk provided
+    generateKeyPair('rsa', {
+        modulusLength: 2048,
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem', cipher: 'aes-256-cbc', passphrase: '' }
+    }, async (err, publicKey, privateKey) => {
+        if (err) return res.status(500).send({ errCode: -1, errDesc: 'Key generation failed' });
+        await user.update({ key: publicKey.replace(/\\n/g, '\n') });
+        // Notify online contacts of key change
+        const connections = await db.connections.findAll({ where: { from: req.params.userid, status: util.ConnectionStatus.ACCEPTED } });
+        for (const conn of connections) {
+            notify(conn.to, { type: 'key_changed', userId: req.params.userid, key: publicKey });
+        }
+        const { generateStateCert } = require('../services/stateCert');
+        const stateCert = await generateStateCert(req.user.user);
+        res.status(200).json({ deviceId: device.id, keys: { private: privateKey, public: publicKey }, stateCert });
+    });
 });
 
 router.delete('/:userid', authenticate, authorize('Parent'), async (req, res) => {
