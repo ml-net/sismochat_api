@@ -51,7 +51,7 @@ app.get('/health', async (_req, res) => {
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // Global error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
     console.error(err.stack || err);
     res.status(err.status || 500).json({
         errCode: -1,
