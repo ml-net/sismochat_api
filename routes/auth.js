@@ -49,8 +49,11 @@ router.post('/user', async (req, res) => {
     } */
     /* #swagger.responses[200] = { description: 'JWT token returned' } */
     /* #swagger.responses[401] = { description: 'Authentication failed' } */
+    if (!req.body?.token) {
+        return res.status(401).send({ errCode: 5, errDesc: "Authentication required" });
+    }
     const ut = req.body.token.split('.');
-    if (!ut || ut.length != 3) {
+    if (ut.length != 3) {
         return res.status(401).send({ errCode: 5, errDesc: "Authentication required" });
     }
     const data = await userAuth(ut);

@@ -1,6 +1,5 @@
 const { WebSocketServer } = require('ws');
 const jwt = require('jsonwebtoken');
-const url = require('url');
 
 const secret = process.env.JWT_SECRET;
 const clients = new Map(); // userId -> Set of ws connections
@@ -10,8 +9,8 @@ function setupWebSocket(server) {
     const wss = new WebSocketServer({ server, path: '/ws' });
 
     wss.on('connection', (ws, req) => {
-        const params = url.parse(req.url, true).query;
-        const token = params.token;
+        const { searchParams } = new URL(req.url, 'http://localhost');
+        const token = searchParams.get('token');
 
         if (!token) {
             ws.close(4001, 'Token required');
