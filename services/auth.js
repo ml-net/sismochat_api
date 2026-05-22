@@ -34,7 +34,7 @@ async function userAuth(usertoken) {
 
     const d = await db.devices.findOne({ where: { userid } });
     if (!d) {
-        return { errCode: 7, errDesc: "User don't have DeviceId registered" };
+        return { errCode: 14, errDesc: "User don't have DeviceId registered" };
     }
     if (d.id != deviceId) {
         return { errCode: 8, errDesc: "Other DeviceID associated with user" };

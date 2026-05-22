@@ -20,7 +20,7 @@ app.use(cors({
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 20, // max 20 attempts per window
-    message: { errCode: -1, errDesc: 'Too many attempts, try again later' }
+    message: { errCode: 15, errDesc: 'Too many attempts, try again later' }
 });
 
 app.use(express.urlencoded({ extended: true }));

@@ -20,7 +20,7 @@ const resetRequestLimiter = rateLimit({
     windowMs: RESET_RATE_LIMIT_WINDOW_MINUTES * 60 * 1000,
     max: 3,
     keyGenerator: (req) => req.body.email || req.ip,
-    message: { errCode: -1, errDesc: 'Too many reset requests, try again later' },
+    message: { errCode: 15, errDesc: 'Too many reset requests, try again later' },
     validate: false
 });
 
@@ -28,7 +28,7 @@ const discoveryLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: DISCOVERY_RATE_LIMIT_PER_HOUR,
     keyGenerator: (req) => req.user?.user || req.ip,
-    message: { errCode: -1, errDesc: 'Too many search requests, try again later' },
+    message: { errCode: 15, errDesc: 'Too many search requests, try again later' },
     validate: false
 });
 
@@ -101,7 +101,7 @@ router.patch('/password', authenticate, [
     }
     const match = await bcrypt.compare(req.body.oldPassword, parent.pwd);
     if (!match) {
-        return res.status(401).send({ errCode: 4, errDesc: "Old password incorrect" });
+        return res.status(401).send({ errCode: 12, errDesc: "Old password incorrect" });
     }
     if (req.body.oldPassword === req.body.newPassword) {
         return res.status(400).send({ errCode: 4, errDesc: "New password must differ from old password" });
