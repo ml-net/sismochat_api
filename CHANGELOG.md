@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.9.0] - 2026-05-22 — Device re-provisioning & error codes
+
+### Added
+- `PUT /api/v1/device/:userid` endpoint for device re-provisioning (key rotation on device loss) (#170)
+- `GET /api/v1/status` endpoint for server notifications (#163)
+- Public key (`key`) included in `GET /connection/` response for key refresh at login
+- ADR-006: decision not to encrypt state certificate
+- ADR-009: device re-provisioning strategy and key rotation
+- Release checklist section 13 (device re-provisioning)
+
+### Changed
+- Standardized error codes across all endpoints (#168)
+
 ## [v0.8.0] - 2026-05-22 — Security hardening
 
 ### Changed
