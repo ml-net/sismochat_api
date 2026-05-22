@@ -102,3 +102,12 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 12.3 Edit child nickname → updated in login select
 - [ ] 12.4 Delete child → connections removed, system message sent to contacts
 - [ ] 12.5 Rate limiting on auth endpoints (too many attempts → 429)
+
+## 13. Device Re-provisioning
+- [ ] 13.1 Re-provision child device (parent auth) → old device deleted, new device created
+- [ ] 13.2 Re-provision updates public key for the child
+- [ ] 13.3 Online contacts receive `key_changed` WebSocket notification
+- [ ] 13.4 After re-provision: child can login and send/receive messages with new keys
+- [ ] 13.5 Re-provision non-existent user → 404
+- [ ] 13.6 Re-provision without parent auth → 401
+- [ ] 13.7 Connection list includes public key (`key` field)
