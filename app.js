@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -24,8 +23,8 @@ const authLimiter = rateLimit({
     message: { errCode: -1, errDesc: 'Too many attempts, try again later' }
 });
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
 
 // API v1 router
 const v1 = express.Router();

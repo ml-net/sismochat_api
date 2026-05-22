@@ -132,7 +132,7 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
     if (!c) {
         return res.status(404).send("Connection request not found");
     }
-    if (typeof req.body.status == 'undefined') {
+    if (!req.body || typeof req.body.status == 'undefined') {
         return res.status(400).send({ errCode: 9, errDesc: 'Status missing' });
     }
     if (req.body.status == util.ConnectionStatus.ACCEPTED) {
