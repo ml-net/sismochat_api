@@ -36,6 +36,7 @@ v1.use('/connection/', require('./routes/connection.js'));
 v1.use('/device/', require('./routes/device.js'));
 v1.use('/assets/', require('./routes/assets.js'));
 v1.use('/sync/', require('./routes/sync.js'));
+v1.use('/status/', require('./routes/status.js'));
 
 app.use('/api/v1', v1);
 
