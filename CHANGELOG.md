@@ -4,6 +4,26 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.8.0] - 2026-05-22 — Security hardening
+
+### Changed
+- Upgrade Express from v4.18 to v5 (resolves 5 high-severity CVEs)
+- Upgrade sqlite3 from v5.1 to v6.0 (resolves tar/node-gyp path traversal vulnerabilities)
+- Upgrade swagger-ui-express from v4.6 to v5 (Express 5 compatibility)
+- Replace `body-parser` with built-in `express.json()` / `express.urlencoded()`
+- Replace deprecated `url.parse()` with WHATWG `URL` API in WebSocket service
+- Deploy now triggers only on version tag (`v*`), not on every merge to main (#141)
+
+### Fixed
+- Guard against `req.body` being `undefined` in Express 5 (connection status, user auth)
+
+### Removed
+- `body-parser` dependency (functionality now built into Express 5)
+
+### Security
+- Sequelize v7 upgrade deferred (still in alpha); vulnerability (GHSA-6457-6jrx-69cr) does not affect us (no `Sequelize.cast()` usage)
+- Remaining 2 moderate vulnerabilities (uuid bounds check) not exploitable in our code
+
 ## [v0.7.4] - 2026-05-21 — Final v0.7 stabilization
 
 ### Fixed
