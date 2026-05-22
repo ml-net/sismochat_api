@@ -548,6 +548,44 @@ describe('User endpoint', () => {
         );
     });
 
+    it('Re-provisioning device for non-existent user should return 404', () => {
+        return request(app)
+            .put('/api/v1/device/nonexistent')
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .expect(404);
+    });
+
+    it('Re-provisioning device (server generates keys) should return 200 with new deviceId and keys', () => {
+        return request(app)
+            .put('/api/v1/device/' + id2)
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .expect(200)
+            .then((res) => {
+                expect(res.body).toHaveProperty('deviceId');
+                expect(res.body).toHaveProperty('keys.private');
+                expect(res.body).toHaveProperty('keys.public');
+                expect(res.body).toHaveProperty('stateCert');
+                deviceId2 = res.body.deviceId;
+                pv2 = res.body.keys.private;
+                pk2 = res.body.keys.public;
+            });
+    });
+
+    it('Re-provisioning device with client-provided key should return 200', () => {
+        return request(app)
+            .put('/api/v1/device/' + id1)
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .send({ pk: pk1 })
+            .expect(200)
+            .then((res) => {
+                expect(res.body).toHaveProperty('deviceId');
+                expect(res.body.keys.public).toEqual(pk1);
+                expect(res.body).toHaveProperty('stateCert');
+                expect(res.body).not.toHaveProperty('keys.private');
+                deviceId1 = res.body.deviceId;
+            });
+    });
+
 });
 
 describe('Message endpoint', () => {
@@ -1002,6 +1040,7 @@ describe('Connections endpoint', () => {
                     expect(content.body.length).toEqual(2);
                     expect(content.body[0]).toHaveProperty('id');
                     expect(content.body[0]).toHaveProperty('nick');
+                    expect(content.body[0]).toHaveProperty('key');
                 })
         );
     });

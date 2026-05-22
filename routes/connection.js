@@ -24,8 +24,8 @@ router.get('/', authenticate, authorize('User'), async (req, res) => {
         offset
     });
     const contacts = await Promise.all(cl.map(async c => {
-        const nick = await util.getNickByID(c.dataValues.to);
-        return { id: c.dataValues.to, nick };
+        const user = await db.users.findByPk(c.dataValues.to);
+        return { id: c.dataValues.to, nick: user?.nick || null, key: user?.key || null };
     }));
     res.status(200).send(contacts);
 });
@@ -83,8 +83,8 @@ router.get('/:user', authenticate, authorize('Parent'), async (req, res) => {
         offset
     });
     const contacts = await Promise.all(cl.map(async c => {
-        const nick = await util.getNickByID(c.dataValues.to);
-        return { id: c.dataValues.to, nick };
+        const user = await db.users.findByPk(c.dataValues.to);
+        return { id: c.dataValues.to, nick: user?.nick || null, key: user?.key || null };
     }));
     res.status(200).send(contacts);
 });
