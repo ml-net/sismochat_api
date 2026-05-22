@@ -22,7 +22,7 @@ router.post('/parent', [
     /* #swagger.responses[404] = { description: 'User not found' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(401).json({ errCode: 4, errDesc: "Missing credentials" });
+        return res.status(401).json({ errCode: 13, errDesc: "Missing credentials" });
     }
     const data = await parentAuth(req.body.email, req.body.pwd);
     if (data.esito === 0) {
@@ -34,7 +34,7 @@ router.post('/parent', [
     } else if (data.esito === 2) {
         res.status(404).send({ errCode: 3, errDesc: "User unknown" });
     } else {
-        res.status(401).send({ errCode: 4, errDesc: "Password mismatch" });
+        res.status(401).send({ errCode: 12, errDesc: "Password mismatch" });
     }
 });
 
@@ -50,11 +50,11 @@ router.post('/user', async (req, res) => {
     /* #swagger.responses[200] = { description: 'JWT token returned' } */
     /* #swagger.responses[401] = { description: 'Authentication failed' } */
     if (!req.body?.token) {
-        return res.status(401).send({ errCode: 5, errDesc: "Authentication required" });
+        return res.status(401).send({ errCode: 13, errDesc: "Authentication required" });
     }
     const ut = req.body.token.split('.');
     if (ut.length != 3) {
-        return res.status(401).send({ errCode: 5, errDesc: "Authentication required" });
+        return res.status(401).send({ errCode: 13, errDesc: "Authentication required" });
     }
     const data = await userAuth(ut);
     if (data.errCode === 0) {

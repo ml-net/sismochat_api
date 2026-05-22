@@ -483,6 +483,7 @@ describe('User endpoint', () => {
                 .expect('Content-Type', /json/)
                 .expect(401)
                 .then((authResponse) => {
+                    expect(authResponse.body.errCode).toEqual(3);
                     expect(authResponse.body.errDesc).toEqual('User unknown');
                 })
         );
@@ -497,7 +498,22 @@ describe('User endpoint', () => {
                 .expect('Content-Type', /json/)
                 .expect(401)
                 .then((authResponse) => {
+                    expect(authResponse.body.errCode).toEqual(6);
                     expect(authResponse.body.errDesc).toEqual('Token not valid');
+                })
+        );
+    });
+
+    it('Perform user auth with wrong device should return 401 with errCode 8', () => {
+        // Use id1's credentials but with id2's device
+        let token = util.btoa(id1) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv1);
+        return (
+            request(app)
+                .post('/api/v1/auth/user')
+                .send({ token: token })
+                .expect(401)
+                .then((authResponse) => {
+                    expect(authResponse.body.errCode).toEqual(8);
                 })
         );
     });
@@ -516,6 +532,19 @@ describe('User endpoint', () => {
                 .delete('/api/v1/device/' + id2)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(204)
+        );
+    });
+
+    it('Perform user auth without device should return 401 with errCode 14', () => {
+        let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv2);
+        return (
+            request(app)
+                .post('/api/v1/auth/user')
+                .send({ token: token })
+                .expect(401)
+                .then((authResponse) => {
+                    expect(authResponse.body.errCode).toEqual(14);
+                })
         );
     });
 
@@ -875,6 +904,9 @@ describe('Connections endpoint', () => {
                 .post('/api/v1/connection/' + id2 + '/' + id1)
                 .set('Authorization', 'Bearer ' + JWTtokenParent)
                 .expect(409)
+                .then((content) => {
+                    expect(content.body.errCode).toEqual(11);
+                })
         );
     });
 
@@ -904,6 +936,24 @@ describe('Connections endpoint', () => {
                 .expect(400)
                 .then((content) => {
                     expect(content.body.errCode).toEqual(9)
+                })
+        );
+    });
+
+    it('Changing connection request status with invalid status value should return 400 with errCode 10', async () => {
+        const sent = await request(app)
+            .get('/api/v1/parent/me/connections/sent')
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .expect(200);
+        const existingConnId = sent.body[0].id;
+        return (
+            request(app)
+                .patch('/api/v1/connection/' + existingConnId)
+                .set('Authorization', 'Bearer ' + JWTtokenParent)
+                .send({ status: 99 })
+                .expect(400)
+                .then((content) => {
+                    expect(content.body.errCode).toEqual(10);
                 })
         );
     });
