@@ -98,9 +98,20 @@ sequenceDiagram
 ### Security
 - Certificate is signed by server — client cannot forge state
 - `JWT_SECRET` persists in platform env vars (survives wipes)
-- Certificate stored encrypted on client device
+- Certificate stored in plaintext on client device (see rationale below)
 - Password hash in certificate is bcrypt (not reversible)
 - Certificate has `issuedAt` — server can reject stale certificates if needed
+
+### Certificate Storage — Encryption Considered and Rejected
+
+We evaluated encrypting the state certificate in localStorage with the parent's password (AES). This was rejected because:
+
+1. **Single point of failure**: if the parent forgets the password and the server has wiped, the encrypted cert becomes unrecoverable — defeating the purpose of the recovery mechanism
+2. **Minimal security benefit**: the cert is a JWT signed with `JWT_SECRET`. Without the server's secret key, the cert is useless to an attacker (cannot be used for restore on a different server)
+3. **No sensitive content exposed**: the cert contains only UUIDs, nicknames, bcrypt hashes (irreversible), and connection metadata. No plaintext passwords or messages
+4. **Transport security is sufficient**: the cert travels over HTTPS and is stored locally on the user's device
+
+The recovery flow after password reset remains safe: restore recreates the account (with old password hash), then the parent can use OTP reset to set a new password.
 
 ### Conflict Resolution
 - All restores use **upsert** (INSERT ... ON CONFLICT UPDATE)
