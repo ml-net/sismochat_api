@@ -78,6 +78,7 @@ describe('Password Reset', () => {
                 .send({ email: testParent.email, otp: '000000', newPassword: 'newpass123' })
                 .expect(400);
 
+            expect(res.body.errCode).toBe(5);
             expect(res.body.errDesc).toMatch(/Invalid code/);
         });
 
