@@ -46,7 +46,7 @@ jobs:
       - run: npm test -- --coverage
         env:
           NODE_ENV: test
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
 
   deploy:
     needs: [test]
