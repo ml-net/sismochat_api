@@ -32,4 +32,4 @@ jspm_packages/
 # data directory for sqlite database
 data/*
 !data/*.json
-coverage/
+coverage/.kiro/session-context.md
