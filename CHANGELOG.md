@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.9.1] - 2026-05-25 — Verification patch
+
+### Fixed
+- Reset confirm now returns descriptive validation errors instead of generic "Invalid input"
+
+### Added
+- ADR 012 — Server persistence and sleep strategy
+- User guide (`docs/user-guide.md`)
+- Release checklist: added status endpoint check (1.3)
+
 ## [v0.9.0] - 2026-05-25 — Beta preparation
 
 ### Added
