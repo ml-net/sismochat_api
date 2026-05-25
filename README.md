@@ -50,3 +50,7 @@ A test DB instance will be created and tests will run on it.
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and workflow guidelines.
+
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
