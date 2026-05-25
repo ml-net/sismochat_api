@@ -175,4 +175,42 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
     }
 });
 
+router.delete('/:connid', authenticate, authorize('Parent'), async (req, res) => {
+    // #swagger.tags = ['Connections']
+    // #swagger.summary = 'Remove a connection (by parent)'
+    // #swagger.description = 'Deletes both sides of a connection and notifies the other user.'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[204] = { description: 'Connection removed' } */
+    /* #swagger.responses[403] = { description: 'Not authorized to remove this connection' } */
+    /* #swagger.responses[404] = { description: 'Connection not found' } */
+    const c = await db.connections.findByPk(req.params.connid);
+    if (!c) {
+        return res.status(404).send("Connection not found");
+    }
+    // Verify parent owns the 'from' user
+    const children = await util.getUserByParent(req.user.user);
+    const childIds = children.map(u => u.id);
+    if (!childIds.includes(c.from)) {
+        return res.status(403).send({ errCode: 12, errDesc: 'Not authorized to remove this connection' });
+    }
+    // Remove both sides
+    await db.connections.destroy({ where: { from: c.from, to: c.to } });
+    await db.connections.destroy({ where: { from: c.to, to: c.from } });
+    // Notify other user's parent and send system message
+    const otherUser = await db.users.findByPk(c.to);
+    if (otherUser) {
+        notify(otherUser.parent, { type: 'connection_removed', from: c.from, to: c.to });
+        const fromNick = await util.getNickByID(c.from);
+        try { await sendSystemMessage(c.to, `${fromNick} has been disconnected`); } catch (e) { /* non-blocking */ }
+    }
+    // Update state cert
+    const { generateStateCert } = require('../services/stateCert');
+    const stateCert = await generateStateCert(req.user.user);
+    if (otherUser) {
+        const otherCert = await generateStateCert(otherUser.parent);
+        notify(otherUser.parent, { type: 'state_cert', stateCert: otherCert });
+    }
+    res.status(200).json({ stateCert });
+});
+
 module.exports = router;
