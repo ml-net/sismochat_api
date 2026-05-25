@@ -4,6 +4,33 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.9.0] - 2026-05-25 — Beta preparation
+
+### Added
+- `DELETE /api/v1/connection/:connid` — parent can remove a single connection (#147)
+- Dependabot for automated security updates on npm and GitHub Actions (#157)
+- Issue templates (bug report, feature request, question) with blank issues disabled
+- Jest coverage thresholds enforced in CI (80% statements, 65% branches, 75% functions, 80% lines) (#17)
+- ADR 010 — Message deletion policy (client-side, permission-gated)
+- ADR 011 — Parent certificate backup strategy (client-side, QR/email export)
+- AGPL-3.0 license
+- Contact info and team section in CONTRIBUTING.md
+- Release checklist updated with connection removal checks
+
+### Changed
+- Replace `uuid` package with native `crypto.randomUUID()` (Node 18+, zero dependencies)
+- Bump major dependencies: jest 29→30, supertest 6→7, dotenv 16→17, cross-env 7→10
+- Bump minor dependencies: helmet, swagger-autogen, express-rate-limit, commitlint
+- Bump GitHub Actions: actions/checkout v4→v6, actions/setup-node v4→v6
+
+### Fixed
+- CI: add JWT_SECRET fallback for Dependabot PRs (secrets not available on external PRs)
+- Add explicit `require('crypto')` for Node 18 compatibility
+
+### Security
+- Interaction limits set to collaborators-only (anti-spam)
+- Project board set to private
+
 ## [v0.8.0] - 2026-05-22 — Security hardening
 
 ### Changed
