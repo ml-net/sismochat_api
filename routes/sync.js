@@ -1,9 +1,10 @@
 const router = require('express').Router();
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { authenticate, authorize } = require('../middleware/auth');
 const { generateStateCert } = require('../services/stateCert');
 const db = require('../models/index.js');
-const uuid = require('uuid');
+
 
 const secret = process.env.JWT_SECRET;
 
@@ -68,7 +69,7 @@ router.post('/restore', async (req, res) => {
             for (const conn of child.connections || []) {
                 const [connRecord] = await db.connections.findOrCreate({
                     where: { from: conn.from, to: conn.to },
-                    defaults: { id: uuid.v4(), from: conn.from, to: conn.to, status: conn.status }
+                    defaults: { id: crypto.randomUUID(), from: conn.from, to: conn.to, status: conn.status }
                 });
                 if (connRecord.status !== conn.status) await connRecord.update({ status: conn.status });
                 // Create inverse connection if the other user exists
@@ -77,7 +78,7 @@ router.post('/restore', async (req, res) => {
                     if (otherUser) {
                         await db.connections.findOrCreate({
                             where: { from: conn.to, to: conn.from },
-                            defaults: { id: uuid.v4(), from: conn.to, to: conn.from, status: 0 }
+                            defaults: { id: crypto.randomUUID(), from: conn.to, to: conn.from, status: 0 }
                         });
                     }
                 }
@@ -90,7 +91,7 @@ router.post('/restore', async (req, res) => {
             for (const conn of inbound) {
                 await db.connections.findOrCreate({
                     where: { from: child.id, to: conn.from },
-                    defaults: { id: uuid.v4(), from: child.id, to: conn.from, status: 0 }
+                    defaults: { id: crypto.randomUUID(), from: child.id, to: conn.from, status: 0 }
                 });
             }
         }

@@ -1,5 +1,6 @@
 const router = require('express').Router();
-const { generateKeyPair } = require('crypto');
+const crypto = require('crypto');
+const { generateKeyPair } = crypto;
 const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
@@ -9,8 +10,8 @@ async function connectVirtualUser(parentId, childId) {
     const virtualUser = await db.users.findOne({ where: { parent: parentId, nick: util.PARENT_USER_NICK } });
     if (virtualUser) {
         await db.connections.bulkCreate([
-            { id: require('uuid').v4(), from: virtualUser.id, to: childId, status: util.ConnectionStatus.ACCEPTED },
-            { id: require('uuid').v4(), from: childId, to: virtualUser.id, status: util.ConnectionStatus.ACCEPTED }
+            { id: crypto.randomUUID(), from: virtualUser.id, to: childId, status: util.ConnectionStatus.ACCEPTED },
+            { id: crypto.randomUUID(), from: childId, to: virtualUser.id, status: util.ConnectionStatus.ACCEPTED }
         ]);
     }
 }
