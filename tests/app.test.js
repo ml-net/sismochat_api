@@ -1045,5 +1045,48 @@ describe('Connections endpoint', () => {
         );
     });
 
+    it('DELETE connection without auth should return 401', () => {
+        return request(app)
+            .delete('/api/v1/connection/someconnid')
+            .expect(401);
+    });
+
+    it('DELETE connection with user token should return 401', () => {
+        return request(app)
+            .delete('/api/v1/connection/someconnid')
+            .set('Authorization', 'Bearer ' + JWTTokenUser)
+            .expect(401);
+    });
+
+    it('DELETE connection with non-existent connid should return 404', () => {
+        return request(app)
+            .delete('/api/v1/connection/badconnid')
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .expect(404);
+    });
+
+    it('DELETE connection should remove both sides and return stateCert', async () => {
+        const sent = await request(app)
+            .get('/api/v1/parent/me/connections/sent')
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .expect(200);
+        const conn = sent.body.find(c => c.from === id1 && c.to === id2);
+        expect(conn).toBeDefined();
+
+        const res = await request(app)
+            .delete('/api/v1/connection/' + conn.id)
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .expect(200);
+        expect(res.body).toHaveProperty('stateCert');
+
+        // Verify connection is gone
+        const after = await request(app)
+            .get('/api/v1/connection/' + id1)
+            .set('Authorization', 'Bearer ' + JWTtokenParent)
+            .expect(200);
+        const stillExists = after.body.find(c => c.id === id2);
+        expect(stillExists).toBeUndefined();
+    });
+
 });
 
