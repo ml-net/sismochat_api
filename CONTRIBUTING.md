@@ -107,3 +107,17 @@ To test with real emails, add `RESEND_API_KEY=re_xxxxx` to `.env` (get a key at 
 docker build -t sismochat-api .
 docker run -p 3000:3000 -e JWT_SECRET=mysecret -e NODE_ENV=production sismochat-api
 ```
+
+## Get in Touch
+
+Interested in contributing or just want to say hi? Reach out before diving in:
+
+- Open a [GitHub Discussion](https://github.com/ml-net/sismochat_api/discussions) for questions, ideas, or feedback
+- Open an [Issue](https://github.com/ml-net/sismochat_api/issues) for bugs or feature requests
+- Email: [marco@marcolupi.net](mailto:marco@marcolupi.net)
+
+## Team
+
+| Name | Role | GitHub |
+|------|------|--------|
+| Marco Lupi | Creator & maintainer | [@ml-net](https://github.com/ml-net) |
