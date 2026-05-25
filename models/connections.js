@@ -1,5 +1,5 @@
 'use strict';
-const uuid = require('uuid');
+
 const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class connections extends Model {
@@ -16,6 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'connections',
   });
-  connections.beforeCreate(c => { if (!c.id) c.id = uuid.v4(); });
+  connections.beforeCreate(c => { if (!c.id) c.id = crypto.randomUUID(); });
   return connections;
 };
