@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { authenticate, authorize } = require('../middleware/auth');
 const { generateStateCert } = require('../services/stateCert');

@@ -1,5 +1,6 @@
 const router = require('express').Router();
-const { generateKeyPair } = require('crypto');
+const crypto = require('crypto');
+const { generateKeyPair } = crypto;
 const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
