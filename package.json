@@ -1,6 +1,6 @@
 {
   "name": "sismochat-api",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A simple chat app, focused on Security, the target is childood. API for server side",
   "main": "server.js",
   "scripts": {
