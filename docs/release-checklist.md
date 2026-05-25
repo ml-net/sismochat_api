@@ -41,6 +41,8 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 4.7 View sent connection requests with status
 - [ ] 4.8 Duplicate connection request → error
 - [ ] 4.9 Discovery rate limiting (too many searches → 429)
+- [ ] 4.10 Parent removes a connection → both sides deleted, contact disappears
+- [ ] 4.11 Removed contact receives system message notification
 
 ## 5. Messaging — Text
 - [ ] 5.1 Send text message
