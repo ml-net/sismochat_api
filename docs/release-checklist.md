@@ -5,6 +5,7 @@ Use this checklist after every deploy to verify no regressions.
 ## 1. Server Health
 - [ ] 1.1 `GET /health` returns `{"status":"ok","version":"X.Y.Z"}`
 - [ ] 1.2 Version matches the expected release
+- [ ] 1.3 `GET /api/v1/status` returns valid response (message or null)
 
 ## 2. Registration & Auth
 - [ ] 2.1 Register parent (valid email + password ≥ 6 chars)

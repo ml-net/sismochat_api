@@ -224,7 +224,7 @@ router.post('/reset', [
     /* #swagger.responses[400] = { description: 'Invalid or expired OTP' } */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errCode: 4, errDesc: "Invalid input" });
+        return res.status(400).json({ errCode: 4, errDesc: errors.array().map(e => e.msg).join(', '), details: errors.array() });
     }
 
     const parent = await db.parents.findOne({ where: { email: req.body.email } });
