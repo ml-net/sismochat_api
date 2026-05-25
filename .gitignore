@@ -32,3 +32,4 @@ jspm_packages/
 # data directory for sqlite database
 data/*
 !data/*.json
+coverage/
