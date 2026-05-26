@@ -17,6 +17,9 @@ JWT_SECRET=trytoguess
 RESEND_API_KEY=re_xxxxxxxx
 RESET_FROM_EMAIL=onboarding@resend.dev
 RESET_TOKEN_TTL_MINUTES=30
+VAPID_PUBLIC_KEY=your_vapid_public_key
+VAPID_PRIVATE_KEY=your_vapid_private_key
+VAPID_SUBJECT=mailto:noreply@sismochat.marcolupi.net
 ```
 
 where
@@ -27,6 +30,9 @@ where
 - `RESET_FROM_EMAIL` is the sender address for reset emails (default: `onboarding@resend.dev`)
 - `RESET_TOKEN_TTL_MINUTES` is the OTP expiry time in minutes (default: 30)
 - `RESET_RATE_LIMIT_WINDOW_MINUTES` is the rate limit window for reset requests (default: 15)
+- `VAPID_PUBLIC_KEY` is the VAPID public key for Web Push notifications (optional in dev — push disabled if missing)
+- `VAPID_PRIVATE_KEY` is the VAPID private key for Web Push notifications (optional in dev — push disabled if missing)
+- `VAPID_SUBJECT` is the VAPID subject (mailto: or URL, default: `mailto:noreply@sismochat.marcolupi.net`)
 
 Then, you must run
 
