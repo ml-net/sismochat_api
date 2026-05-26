@@ -26,6 +26,33 @@ router.post('/:userid', authenticate, authorize('Parent'), async (req, res) => {
     res.status(201).json({ deviceId: device.id, stateCert });
 });
 
+router.put('/:deviceId/push-subscription', authenticate, async (req, res) => {
+    // #swagger.tags = ['Devices']
+    // #swagger.summary = 'Save push subscription for a device'
+    // #swagger.description = 'Store the Web Push subscription object for the specified device. The authenticated user must own the device.'
+    // #swagger.security = [{ "Bearer": [] }]
+    /* #swagger.responses[200] = { description: 'Subscription saved' } */
+    /* #swagger.responses[400] = { description: 'Invalid subscription' } */
+    /* #swagger.responses[403] = { description: 'Not your device' } */
+    /* #swagger.responses[404] = { description: 'Device not found' } */
+    const { subscription } = req.body;
+    if (!subscription || !subscription.endpoint || !subscription.keys) {
+        return res.status(400).json({ errCode: 30, errDesc: 'Invalid push subscription' });
+    }
+    const device = await db.devices.findByPk(req.params.deviceId);
+    if (!device) {
+        return res.status(404).json({ errCode: 31, errDesc: 'Device not found' });
+    }
+    if (device.userid !== req.user.user) {
+        const user = await db.users.findByPk(device.userid);
+        if (!user || user.parent !== req.user.user) {
+            return res.status(403).json({ errCode: 32, errDesc: 'Not your device' });
+        }
+    }
+    await device.update({ pushSubscription: subscription });
+    res.status(200).json({ message: 'Subscription saved' });
+});
+
 router.put('/:userid', authenticate, authorize('Parent'), async (req, res) => {
     // #swagger.tags = ['Devices']
     // #swagger.summary = 'Re-provision device for a user'
