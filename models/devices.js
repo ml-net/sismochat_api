@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   devices.init({
     userid: DataTypes.UUID,
+    pushSubscription: DataTypes.JSON,
   }, {
     sequelize,
     modelName: 'devices',
