@@ -114,3 +114,11 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 13.5 Re-provision non-existent user → 404
 - [ ] 13.6 Re-provision without parent auth → 401
 - [ ] 13.7 Connection list includes public key (`key` field)
+
+## 14. Push Notifications
+- [ ] 14.1 VAPID keys configured on Render (env vars present)
+- [ ] 14.2 Register push subscription on device (endpoint returns 200)
+- [ ] 14.3 Send message to offline user → push notification received
+- [ ] 14.4 Push suppressed when recipient is in foreground (no double notification)
+- [ ] 14.5 Push disabled gracefully when VAPID keys missing (no crash, warning logged)
+- [ ] 14.6 Invalid/expired subscription → server removes it (no repeated errors)
