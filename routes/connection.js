@@ -4,6 +4,7 @@ const util = require('../util.js');
 const db = require('../models/index.js');
 const { notify } = require('../services/websocket');
 const { sendSystemMessage } = require('../services/systemMessage');
+const { sendPush } = require('../services/push');
 
 // Connection list for user, requested by same user
 router.get('/', authenticate, authorize('User'), async (req, res) => {
@@ -111,6 +112,20 @@ router.post('/:from/:to', authenticate, authorize('Parent'), async (req, res) =>
     const toUser = await db.users.findByPk(req.params.to);
     if (toUser) {
         notify(toUser.parent, { type: 'connection_request', from: req.params.from, to: req.params.to });
+        // Push notification to parent's device
+        const parentUser = await db.users.findOne({ where: { parent: toUser.parent, nick: util.PARENT_USER_NICK } });
+        if (parentUser) {
+            const device = await db.devices.findOne({ where: { userid: parentUser.id } });
+            if (device?.pushSubscription) {
+                const fromNick = await util.getNickByID(req.params.from);
+                sendPush(device.pushSubscription, { type: 'connection_request', from: fromNick })
+                    .catch(async (err) => {
+                        if (err?.statusCode === 410 || err?.statusCode === 404) {
+                            await device.update({ pushSubscription: null });
+                        }
+                    });
+            }
+        }
     }
     res.sendStatus(201);
 });
@@ -142,6 +157,20 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
         const fromUser = await db.users.findByPk(c1.from);
         if (fromUser) {
             notify(fromUser.parent, { type: 'connection_status', connectionId: c1.id, status: req.body.status });
+            // Push notification to requester's parent
+            const parentUser = await db.users.findOne({ where: { parent: fromUser.parent, nick: util.PARENT_USER_NICK } });
+            if (parentUser) {
+                const device = await db.devices.findOne({ where: { userid: parentUser.id } });
+                if (device?.pushSubscription) {
+                    const toNick = await util.getNickByID(c1.to);
+                    sendPush(device.pushSubscription, { type: 'connection_accepted', from: toNick })
+                        .catch(async (err) => {
+                            if (err?.statusCode === 410 || err?.statusCode === 404) {
+                                await device.update({ pushSubscription: null });
+                            }
+                        });
+                }
+            }
         }
         // System messages to both users
         const toNick = await util.getNickByID(c1.to);
@@ -166,6 +195,19 @@ router.patch('/:connid', authenticate, authorize('Parent'), async (req, res) => 
         const fromUser = await db.users.findByPk(c.from);
         if (fromUser) {
             notify(fromUser.parent, { type: 'connection_status', connectionId: c.id, status: req.body.status });
+            // Push notification to requester's parent
+            const parentUser = await db.users.findOne({ where: { parent: fromUser.parent, nick: util.PARENT_USER_NICK } });
+            if (parentUser) {
+                const device = await db.devices.findOne({ where: { userid: parentUser.id } });
+                if (device?.pushSubscription) {
+                    sendPush(device.pushSubscription, { type: 'connection_rejected' })
+                        .catch(async (err) => {
+                            if (err?.statusCode === 410 || err?.statusCode === 404) {
+                                await device.update({ pushSubscription: null });
+                            }
+                        });
+                }
+            }
         }
         // System message to requester
         await sendSystemMessage(c.from, 'Connection request declined');
