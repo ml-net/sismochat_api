@@ -4,6 +4,7 @@ const { authenticate, authorize } = require('../middleware/auth');
 const util = require('../util.js');
 const db = require('../models/index.js');
 const { notify } = require('../services/websocket');
+const { sendPush } = require('../services/push');
 
 router.get('/list/:msgStatus', authenticate, authorize('User'), [
     param('msgStatus').isInt({ min: 0, max: 1 })
@@ -118,6 +119,17 @@ router.post('/', authenticate, authorize('User'), [
     const msgData = { from: fromID, to: toID, body: req.body.message, status: util.MessageStatus.UNREAD, type: msgType };
     const msg1 = await db.messages.create(msgData);
     notify(toID, { type: 'new_message', from: fromID });
+    // Send push notification to recipient's device
+    const device = await db.devices.findOne({ where: { userid: toID } });
+    if (device?.pushSubscription) {
+        const sender = await db.users.findByPk(fromID);
+        sendPush(device.pushSubscription, { type: 'new_message', from: sender?.nick || 'Someone' })
+            .catch(async (err) => {
+                if (err?.statusCode === 410 || err?.statusCode === 404) {
+                    await device.update({ pushSubscription: null });
+                }
+            });
+    }
     res.status(201).send({ messageID: msg1.id });
 });
 
