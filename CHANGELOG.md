@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.10.0] - 2026-05-27 — Push Notifications
+
+### Added
+- Web Push notifications for offline message delivery (#200)
+- `web-push` dependency with VAPID key configuration (#201)
+- `pushSubscription` JSON field on device model (#202)
+- `PUT /api/v1/device/:deviceId/push-subscription` endpoint (#203)
+- Push notification triggered on new message (#204)
+- Push notification on connection events: request, accepted, rejected (#211)
+- ADR 013 — Notification strategy (WS + Web Push complementary) (#206)
+- Release checklist: push notifications section (14.1–14.6)
+
+### Changed
+- Invalid/expired push subscriptions (410/404) are automatically removed from DB
+
 ## [v0.9.1] - 2026-05-25 — Verification patch
 
 ### Fixed
