@@ -2,7 +2,7 @@ const swaggerAutogen = require('swagger-autogen')();
 
 const doc = {
     info: {
-        version: '0.1.0',
+        version: '0.10.0',
         title: 'SiSMoChat API',
         description: 'API for SiSMoChat - A secure chat application focused on child safety with parental control.'
     },

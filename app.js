@@ -6,6 +6,11 @@ const app = express();
 const swaggerUi = require('swagger-ui-express')
 const swaggerFile = require('./swagger_output.json')
 
+if (process.env.NODE_ENV === 'production') {
+  swaggerFile.host = process.env.SWAGGER_HOST || 'sismochat-api.onrender.com'
+  swaggerFile.schemes = ['https']
+}
+
 // Security headers
 app.use(helmet());
 
