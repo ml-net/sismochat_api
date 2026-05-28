@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+tone_instructions: >
+  Be concise and direct. Focus on real issues, not style preferences.
+  Use severity prefixes: 🔴 Blocking, 🟡 Suggestion, 💡 Nit.
+early_access: false
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: true
+    auto_incremental_review: true
+  path_filters:
+    - "!package-lock.json"
+    - "!coverage/**"
+  path_instructions:
+    - path: "src/routes/**"
+      instructions: >
+        Routes must validate input. Check for proper error handling middleware usage.
+        Auth-protected routes must use the authenticate middleware.
+    - path: "src/models/**"
+      instructions: >
+        Sequelize models. Verify migrations exist for any schema changes.
+        Associations must be defined in the model file.
+    - path: "tests/**"
+      instructions: >
+        Tests use Jest + supertest. Each test file should clean up its own data.
+        Verify both success and error cases are covered.
+    - path: "src/middleware/**"
+      instructions: >
+        Middleware must call next() on success and return proper HTTP status on failure.
+        Security middleware (auth, rate-limit) must never leak sensitive info in responses.
+chat:
+  auto_reply: true
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: "local"
+  code_guidelines:
+    enabled: true
