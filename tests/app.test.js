@@ -30,10 +30,10 @@ const newUserWithKey = {
 }
 
 let JWTtokenParent, JWTTokenUser, JWTTokenUser2;
-let pk1, pv1, pk2, pv2;
+let pk1, pv1, _pk2, pv2;
 let id1, id2;
 let deviceId1, deviceId2;
-let msgId, connId;
+let msgId, _connId;
 
 describe('Health check', () => {
     it('GET /health should return 200 with status ok', () => {
@@ -308,7 +308,7 @@ describe('User endpoint', () => {
                     expect(response.body).toHaveProperty('keys.private');
                     expect(response.body).toHaveProperty('keys.public');
                     pv2 = response.body.keys.private;
-                    pk2 = response.body.keys.public;
+                    _pk2 = response.body.keys.public;
                     id2 = response.body.ID;
                 })
         );
@@ -567,7 +567,7 @@ describe('User endpoint', () => {
                 expect(res.body).toHaveProperty('stateCert');
                 deviceId2 = res.body.deviceId;
                 pv2 = res.body.keys.private;
-                pk2 = res.body.keys.public;
+                _pk2 = res.body.keys.public;
             });
     });
 
@@ -924,7 +924,7 @@ describe('Connections endpoint', () => {
     });
 
     it('GET (empty) approval list should return 200 and empty body', () => {
-        let parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
+        let _parentId = JSON.parse(util.atob(JWTtokenParent.split('.')[1])).user;
         return (
             request(app)
                 .get('/api/v1/parent/me/connections/pending')

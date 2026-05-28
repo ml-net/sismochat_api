@@ -1,6 +1,6 @@
 const http = require('http');
 const WebSocket = require('ws');
-const request = require('supertest');
+const _request = require('supertest');
 const app = require('../app');
 const jwt = require('jsonwebtoken');
 

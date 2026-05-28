@@ -106,7 +106,7 @@ describe('Sync endpoints', () => {
             .send({ stateCert: jwt.sign(otherParent, secret) })
             .expect(201);
         // Now restore our parent — should create inverse connection
-        const res = await request(app)
+        const _res = await request(app)
             .post('/api/v1/sync/restore')
             .send({ stateCert: jwt.sign(mockParentCert, secret) })
             .expect(201);

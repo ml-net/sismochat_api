@@ -11,13 +11,13 @@ const validSubscription = {
 };
 
 describe('Push subscription endpoint', () => {
-  let parentToken, userId, deviceId;
+  let parentToken, _userId, deviceId;
 
   beforeAll(async () => {
     const parent = await db.parents.create({ email: 'push-test@test.com', pwd: '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012' });
     const user = await db.users.create({ nick: 'pushchild', parent: parent.id });
     const device = await db.devices.create({ userid: user.id });
-    userId = user.id;
+    _userId = user.id;
     deviceId = device.id;
     parentToken = jwt.sign({ user: parent.id, profile: 'Parent' }, secret);
   });
