@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.10.1] - 2026-05-28 — Swagger & Lint Cleanup
+
+### Fixed
+- Swagger UI shows HTTPS scheme and correct host in production (#218)
+- Swagger version updated from 0.1.0 to 0.10.0
+- All 11 `no-unused-vars` lint warnings resolved (#212)
+
+### Changed
+- ESLint `no-unused-vars` rule: added `varsIgnorePattern: "^_"` for unused variable convention
+- CodeRabbit configured for automated PR review
+
 ## [v0.10.0] - 2026-05-27 — Push Notifications
 
 ### Added
