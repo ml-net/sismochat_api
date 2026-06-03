@@ -31,6 +31,18 @@
     {
       "name": "Devices",
       "description": "Device pairing management"
+    },
+    {
+      "name": "Assets",
+      "description": "Static assets (stickers, emojis)"
+    },
+    {
+      "name": "Sync",
+      "description": "Client state synchronization"
+    },
+    {
+      "name": "Status",
+      "description": "Server status"
     }
   ],
   "schemes": [
@@ -45,7 +57,7 @@
     }
   },
   "paths": {
-    "/parent": {
+    "/auth/parent": {
       "post": {
         "tags": [
           "Auth"
@@ -75,7 +87,7 @@
         }
       }
     },
-    "/user": {
+    "/auth/user": {
       "post": {
         "tags": [
           "Auth"
@@ -108,7 +120,7 @@
         }
       }
     },
-    "/": {
+    "/parent/": {
       "post": {
         "tags": [
           "Messages"
@@ -150,46 +162,9 @@
             "Bearer": []
           }
         ]
-      },
-      "get": {
-        "tags": [
-          "Connections"
-        ],
-        "summary": "Get own connections list",
-        "description": "",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Max results (default 20)",
-            "type": "integer"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "description": "Skip N results (default 0)",
-            "type": "integer"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of connected user IDs"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
       }
     },
-    "/password": {
+    "/parent/password": {
       "patch": {
         "tags": [
           "Parents"
@@ -237,7 +212,7 @@
         ]
       }
     },
-    "/me/connections/sent": {
+    "/parent/me/connections/sent": {
       "get": {
         "tags": [
           "Parents"
@@ -262,7 +237,7 @@
         ]
       }
     },
-    "/me/connections/pending": {
+    "/parent/me/connections/pending": {
       "get": {
         "tags": [
           "Parents"
@@ -287,7 +262,7 @@
         ]
       }
     },
-    "/{email}/children": {
+    "/parent/{email}/children": {
       "get": {
         "tags": [
           "Parents"
@@ -323,7 +298,7 @@
         ]
       }
     },
-    "/{email}": {
+    "/parent/{email}": {
       "get": {
         "tags": [
           "Parents"
@@ -359,7 +334,7 @@
         ]
       }
     },
-    "/reset-request": {
+    "/parent/reset-request": {
       "post": {
         "tags": [
           "Parents"
@@ -390,7 +365,7 @@
         }
       }
     },
-    "/reset": {
+    "/parent/reset": {
       "post": {
         "tags": [
           "Parents"
@@ -427,7 +402,51 @@
         }
       }
     },
-    "/{userid}": {
+    "/user/": {
+      "post": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Send a message",
+        "description": "Send an encrypted message to another user.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Message sent, returns messageID"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/user/{userid}": {
       "get": {
         "tags": [
           "Users"
@@ -541,92 +560,9 @@
             "Bearer": []
           }
         ]
-      },
-      "post": {
-        "tags": [
-          "Devices"
-        ],
-        "summary": "Register a device for a user",
-        "description": "Create a device ID and pair it with a child user. Only one device per user.",
-        "parameters": [
-          {
-            "name": "userid",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Device created, returns device ID"
-          },
-          "400": {
-            "description": "User already has a device"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "User not found"
-          }
-        },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "Devices"
-        ],
-        "summary": "Re-provision device for a user",
-        "description": "Replace existing device with a new one. Preserves userId, connections, and permissions. Updates public key if provided.",
-        "parameters": [
-          {
-            "name": "userid",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "pk": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Device re-provisioned, returns new device ID and keys"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Not your child"
-          },
-          "404": {
-            "description": "User not found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
       }
     },
-    "/pubkey/{userid}": {
+    "/user/pubkey/{userid}": {
       "get": {
         "tags": [
           "Users"
@@ -659,7 +595,7 @@
         ]
       }
     },
-    "/list/{msgStatus}": {
+    "/message/list/{msgStatus}": {
       "get": {
         "tags": [
           "Messages"
@@ -708,7 +644,7 @@
         ]
       }
     },
-    "/{msgID}": {
+    "/message/{msgID}": {
       "get": {
         "tags": [
           "Messages"
@@ -778,7 +714,71 @@
         ]
       }
     },
-    "/sent/{parent}": {
+    "/message/": {
+      "post": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Send a message",
+        "description": "Send an encrypted message to another user.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Message sent, returns messageID"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/connection/": {
+      "get": {
+        "tags": [
+          "Status"
+        ],
+        "summary": "Get server status message",
+        "description": "Returns an optional message for client display at startup (e.g. maintenance notices).",
+        "responses": {
+          "200": {
+            "description": "Status message (null if none)"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/connection/sent/{parent}": {
       "get": {
         "tags": [
           "Connections"
@@ -811,7 +811,7 @@
         ]
       }
     },
-    "/approvalList/{parent}": {
+    "/connection/approvalList/{parent}": {
       "get": {
         "tags": [
           "Connections"
@@ -844,7 +844,7 @@
         ]
       }
     },
-    "/{user}": {
+    "/connection/{user}": {
       "get": {
         "tags": [
           "Connections"
@@ -889,7 +889,7 @@
         ]
       }
     },
-    "/{from}/{to}": {
+    "/connection/{from}/{to}": {
       "post": {
         "tags": [
           "Connections"
@@ -931,7 +931,7 @@
         ]
       }
     },
-    "/{connid}": {
+    "/connection/{connid}": {
       "patch": {
         "tags": [
           "Connections"
@@ -1015,7 +1015,126 @@
         ]
       }
     },
-    "/{deviceId}/push-subscription": {
+    "/device/{userid}": {
+      "post": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Register a device for a user",
+        "description": "Create a device ID and pair it with a child user. Only one device per user.",
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Device created, returns device ID"
+          },
+          "400": {
+            "description": "User already has a device"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Re-provision device for a user",
+        "description": "Replace existing device with a new one. Preserves userId, connections, and permissions. Updates public key if provided.",
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "pk": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device re-provisioned, returns new device ID and keys"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Not your child"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Remove device from a user",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Device removed"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Not your child"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/device/{deviceId}/push-subscription": {
       "put": {
         "tags": [
           "Devices"
@@ -1064,6 +1183,119 @@
             "Bearer": []
           }
         ]
+      }
+    },
+    "/assets/emojis": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get available emoji list",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Array of Unicode emoji characters"
+          }
+        }
+      }
+    },
+    "/assets/stickers": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get available sticker list",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Array of sticker objects with id, label, emoji"
+          }
+        }
+      }
+    },
+    "/sync/cert": {
+      "get": {
+        "tags": [
+          "Sync"
+        ],
+        "summary": "Get current state certificate",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "State certificate JWT"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/sync/restore": {
+      "post": {
+        "tags": [
+          "Sync"
+        ],
+        "summary": "Restore server state from client certificate",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "stateCert": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "State restored"
+          },
+          "400": {
+            "description": "Malformed certificate"
+          },
+          "401": {
+            "description": "Invalid signature"
+          },
+          "409": {
+            "description": "Email conflict"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/status/": {
+      "get": {
+        "tags": [
+          "Status"
+        ],
+        "summary": "Get server status message",
+        "description": "Returns an optional message for client display at startup (e.g. maintenance notices).",
+        "responses": {
+          "200": {
+            "description": "Status message (null if none)"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
       }
     }
   },
