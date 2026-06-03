@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.10.2] - 2026-06-03 — Swagger Path Fix
+
+### Fixed
+- Swagger paths now include route mount prefixes (`/message/`, `/user/`, `/connection/`, etc.) (#220)
+- Swagger "Try it out" requests work correctly against the real API endpoints
+
 ## [v0.10.1] - 2026-05-28 — Swagger & Lint Cleanup
 
 ### Fixed
