@@ -68,35 +68,32 @@ swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {
     const fs = require('fs');
     const output = JSON.parse(fs.readFileSync(outputFile, 'utf-8'));
 
-    // Build lookup: for each route file, extract its defined paths
+    // Build lookup: for each route file, extract its defined paths with HTTP method
     const filePaths = {};
     for (const { prefix, file } of mounts) {
         const content = fs.readFileSync(file, 'utf-8');
-        const regex = /router\.\s*(?:get|post|put|patch|delete)\s*\(\s*['"`]([^'"`]+)['"`]/g;
+        const regex = /router\.\s*(get|post|put|patch|delete)\s*\(\s*['"`]([^'"`]+)['"`]/g;
         let match;
         filePaths[file] = [];
         while ((match = regex.exec(content)) !== null) {
             filePaths[file].push({
-                routePath: match[1],
-                swaggerPath: match[1].replace(/:(\w+)/g, '{$1}'),
+                method: match[1],
+                routePath: match[2],
+                swaggerPath: match[2].replace(/:(\w+)/g, '{$1}'),
                 prefix
             });
         }
     }
 
-    // Rebuild paths object with prefixes
+    // Rebuild paths object with prefixes, copying only the specific HTTP verb
     const newPaths = {};
     for (const { file } of mounts) {
-        for (const { swaggerPath, prefix } of filePaths[file]) {
-            const oldKey = swaggerPath;
+        for (const { method, swaggerPath, prefix } of filePaths[file]) {
             const newKey = prefix + swaggerPath;
-
-            // Match against generated paths (swagger-autogen uses path without prefix)
-            if (output.paths[oldKey]) {
-                if (!newPaths[newKey]) newPaths[newKey] = {};
-                // Merge methods (multiple routes may share a path like '/')
-                Object.assign(newPaths[newKey], output.paths[oldKey]);
-            }
+            const operation = output.paths[swaggerPath]?.[method];
+            if (!operation) continue;
+            if (!newPaths[newKey]) newPaths[newKey] = {};
+            newPaths[newKey][method] = operation;
         }
     }
 
