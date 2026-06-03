@@ -23,7 +23,10 @@ const doc = {
         { name: 'Users', description: 'Child user management' },
         { name: 'Messages', description: 'Messaging endpoints' },
         { name: 'Connections', description: 'Connection/friendship management' },
-        { name: 'Devices', description: 'Device pairing management' }
+        { name: 'Devices', description: 'Device pairing management' },
+        { name: 'Assets', description: 'Static assets (stickers, emojis)' },
+        { name: 'Sync', description: 'Client state synchronization' },
+        { name: 'Status', description: 'Server status' }
     ],
     definitions: {
         Parent: {
@@ -45,13 +48,69 @@ const doc = {
 };
 
 const outputFile = './swagger_output.json';
-const endpointsFiles = [
-    './routes/auth.js',
-    './routes/parent.js',
-    './routes/user.js',
-    './routes/message.js',
-    './routes/connection.js',
-    './routes/device.js'
+
+// Mount map mirrors app.js: v1.use('/mount/', require('./routes/file.js'))
+const mounts = [
+    { prefix: '/auth', file: './routes/auth.js' },
+    { prefix: '/parent', file: './routes/parent.js' },
+    { prefix: '/user', file: './routes/user.js' },
+    { prefix: '/message', file: './routes/message.js' },
+    { prefix: '/connection', file: './routes/connection.js' },
+    { prefix: '/device', file: './routes/device.js' },
+    { prefix: '/assets', file: './routes/assets.js' },
+    { prefix: '/sync', file: './routes/sync.js' },
+    { prefix: '/status', file: './routes/status.js' }
 ];
 
-swaggerAutogen(outputFile, endpointsFiles, doc);
+const endpointsFiles = mounts.map(m => m.file);
+
+swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {
+    const fs = require('fs');
+    const output = JSON.parse(fs.readFileSync(outputFile, 'utf-8'));
+
+    // Build lookup: for each route file, extract its defined paths
+    const filePaths = {};
+    for (const { prefix, file } of mounts) {
+        const content = fs.readFileSync(file, 'utf-8');
+        const regex = /router\.\s*(?:get|post|put|patch|delete)\s*\(\s*['"`]([^'"`]+)['"`]/g;
+        let match;
+        filePaths[file] = [];
+        while ((match = regex.exec(content)) !== null) {
+            filePaths[file].push({
+                routePath: match[1],
+                swaggerPath: match[1].replace(/:(\w+)/g, '{$1}'),
+                prefix
+            });
+        }
+    }
+
+    // Rebuild paths object with prefixes
+    const newPaths = {};
+    for (const { file } of mounts) {
+        for (const { swaggerPath, prefix } of filePaths[file]) {
+            const oldKey = swaggerPath;
+            const newKey = prefix + swaggerPath;
+
+            // Match against generated paths (swagger-autogen uses path without prefix)
+            if (output.paths[oldKey]) {
+                if (!newPaths[newKey]) newPaths[newKey] = {};
+                // Merge methods (multiple routes may share a path like '/')
+                Object.assign(newPaths[newKey], output.paths[oldKey]);
+            }
+        }
+    }
+
+    // Keep any paths that already have a prefix (shouldn't happen) or special ones
+    for (const [key, value] of Object.entries(output.paths)) {
+        const alreadyMapped = mounts.some(m =>
+            filePaths[m.file].some(fp => fp.swaggerPath === key)
+        );
+        if (!alreadyMapped) {
+            newPaths[key] = value;
+        }
+    }
+
+    output.paths = newPaths;
+    fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
+    console.log('Post-processed: mount prefixes applied to', Object.keys(newPaths).length, 'paths');
+});
