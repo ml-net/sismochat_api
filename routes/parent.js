@@ -208,7 +208,7 @@ router.post('/reset-request', resetRequestLimiter, [
 
     res.status(200).json({
         msg: 'If the email exists, a reset code has been sent',
-        note: 'Check your spam folder — the email comes from onboarding@resend.dev'
+        note: `Check your spam folder — the email comes from ${process.env.RESET_FROM_EMAIL || 'onboarding@resend.dev'}`
     });
 });
 
