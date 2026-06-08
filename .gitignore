@@ -33,3 +33,7 @@ jspm_packages/
 data/*
 !data/*.json
 coverage/.kiro/session-context.md
+
+# AI config (local only)
+.kiro/
+.qodo/
