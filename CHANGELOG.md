@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.10.3] - 2026-06-09 — OTP Error Details & Dependencies
+
+### Fixed
+
+- Password reset OTP error responses now include `reason` field ('invalid', 'expired', 'too_many') for client-side localization
+- Invalid OTP response includes `remaining` field with attempts count
+
+### Changed
+
+- Updated jsonwebtoken 9.0.0 → 9.0.3 (#221)
+- Updated resend 4.8.0 → 6.12.4 (#222)
+- Updated ws 8.20.1 → 8.21.0 (#223)
+- Updated @commitlint/cli 21.0.1 → 21.0.2 (#224)
+
 ## [v0.10.2] - 2026-06-03 — Swagger Path Fix
 
 ### Fixed

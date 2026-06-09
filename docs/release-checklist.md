@@ -27,10 +27,12 @@ Use this checklist after every deploy to verify no regressions.
 - [ ] 3.5 Request reset → confirmation message shown
 - [ ] 3.6 Email with OTP arrives at destination
 - [ ] 3.7 Confirm reset with valid OTP → password changed
-- [ ] 3.8 Confirm reset with invalid OTP → error
-- [ ] 3.9 Login with new password after reset
-- [ ] 3.10 Too many reset requests → rate limit error (429)
-- [ ] 3.11 Request reset for non-existent email → same response (no info leak)
+- [ ] 3.8 Confirm reset with invalid OTP → error with reason 'invalid' and remaining attempts count
+- [ ] 3.9 Confirm reset with expired OTP → error with reason 'expired'
+- [ ] 3.10 Login with new password after reset
+- [ ] 3.11 Too many reset requests → rate limit error (429)
+- [ ] 3.12 Too many OTP attempts → error with reason 'too_many'
+- [ ] 3.13 Request reset for non-existent email → same response (no info leak)
 
 ## 4. Discovery & Connections
 - [ ] 4.1 Discover parent by email
