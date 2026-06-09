@@ -229,17 +229,17 @@ router.post('/reset', [
 
     const parent = await db.parents.findOne({ where: { email: req.body.email } });
     if (!parent || !parent.resetOtp || !parent.resetOtpExpiry) {
-        return res.status(400).json({ errCode: 5, errDesc: 'Invalid or expired reset code' });
+        return res.status(400).json({ errCode: 5, errDesc: 'Invalid or expired reset code', reason: 'invalid' });
     }
 
     if (new Date() > new Date(parent.resetOtpExpiry)) {
         await parent.update({ resetOtp: null, resetOtpExpiry: null, resetOtpAttempts: 0 });
-        return res.status(400).json({ errCode: 5, errDesc: 'Reset code expired' });
+        return res.status(400).json({ errCode: 5, errDesc: 'Reset code expired', reason: 'expired' });
     }
 
     if (parent.resetOtpAttempts >= RESET_MAX_ATTEMPTS) {
         await parent.update({ resetOtp: null, resetOtpExpiry: null, resetOtpAttempts: 0 });
-        return res.status(400).json({ errCode: 5, errDesc: 'Too many attempts, request a new code' });
+        return res.status(400).json({ errCode: 5, errDesc: 'Too many attempts, request a new code', reason: 'too_many' });
     }
 
     const hash = crypto.createHash('sha256').update(req.body.otp).digest('hex');
@@ -247,7 +247,7 @@ router.post('/reset', [
         const newAttempts = parent.resetOtpAttempts + 1;
         await parent.update({ resetOtpAttempts: newAttempts });
         const remaining = RESET_MAX_ATTEMPTS - newAttempts;
-        return res.status(400).json({ errCode: 5, errDesc: `Invalid code. ${remaining} attempts remaining` });
+        return res.status(400).json({ errCode: 5, errDesc: `Invalid code. ${remaining} attempts remaining`, reason: 'invalid', remaining });
     }
 
     const newHash = await bcrypt.hash(req.body.newPassword, SALT_ROUNDS);
