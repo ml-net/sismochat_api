@@ -32,8 +32,12 @@ router.post('/', authenticate, authorize('Parent'), async (req, res) => {
     if (!await util.parentExists(req.user.user)) {
         return res.status(400).send("Parent not found");
     }
+    const nick = typeof req.body.nick === 'string' ? req.body.nick.trim() : '';
+    if (!nick) {
+        return res.status(400).json({ errCode: 4, errDesc: "Nickname is required" });
+    }
     if (req.body.pk && req.body.pk != '') {
-        const user = await db.users.create({ nick: req.body.nick, key: req.body.pk.replace(/\\n/g, '\n'), parent: req.user.user });
+        const user = await db.users.create({ nick, key: req.body.pk.replace(/\\n/g, '\n'), parent: req.user.user });
         await connectVirtualUser(req.user.user, user.id);
         const { generateStateCert } = require('../services/stateCert');
         const stateCert = await generateStateCert(req.user.user);
@@ -46,7 +50,7 @@ router.post('/', authenticate, authorize('Parent'), async (req, res) => {
         privateKeyEncoding: { type: 'pkcs8', format: 'pem', cipher: 'aes-256-cbc', passphrase: '' }
     }, async (err, publicKey, privateKey) => {
         if (err) return res.status(400).send(err);
-        const user = await db.users.create({ nick: req.body.nick, key: publicKey.replace(/\\n/g, '\n'), parent: req.user.user });
+        const user = await db.users.create({ nick, key: publicKey.replace(/\\n/g, '\n'), parent: req.user.user });
         await connectVirtualUser(req.user.user, user.id);
         const { generateStateCert } = require('../services/stateCert');
         const stateCert = await generateStateCert(req.user.user);
