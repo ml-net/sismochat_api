@@ -144,7 +144,7 @@ router.get('/me/connections/pending', authenticate, authorize('Parent'), async (
 });
 
 router.get('/:email/children', authenticate, authorize('Parent'), (req, res, next) => {
-    if (req.params.email === req.user.email) return next();
+    if (req.params.email.toLowerCase() === req.user.email.toLowerCase()) return next();
     discoveryLimiter(req, res, next);
 }, [
     param('email').isEmail()
