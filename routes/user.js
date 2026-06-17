@@ -32,7 +32,7 @@ router.post('/', authenticate, authorize('Parent'), async (req, res) => {
     if (!await util.parentExists(req.user.user)) {
         return res.status(400).send("Parent not found");
     }
-    const nick = req.body.nick?.trim();
+    const nick = typeof req.body.nick === 'string' ? req.body.nick.trim() : '';
     if (!nick) {
         return res.status(400).json({ errCode: 4, errDesc: "Nickname is required" });
     }
