@@ -143,7 +143,10 @@ router.get('/me/connections/pending', authenticate, authorize('Parent'), async (
     res.status(200).send(cList.map(c => c.dataValues));
 });
 
-router.get('/:email/children', authenticate, authorize('Parent'), discoveryLimiter, [
+router.get('/:email/children', authenticate, authorize('Parent'), (req, res, next) => {
+    if (req.params.email === req.user.email) return next();
+    discoveryLimiter(req, res, next);
+}, [
     param('email').isEmail()
 ], async (req, res) => {
     // #swagger.tags = ['Parents']
