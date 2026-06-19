@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.11.0] - 2026-06-19 — Pluralized Paths & Connection Enrichment
+
+### Changed
+
+- All REST resource paths pluralized: `/parent` → `/parents`, `/user` → `/users`, `/message` → `/messages`, `/connection` → `/connections`, `/device` → `/devices` (#234)
+- Connection list responses (`sent`, `approvalList`, `/me/connections/sent`, `/me/connections/pending`) now include `fromNick` and `toNick` fields (#238)
+- Swagger version bumped to 0.11.0
+
+### Fixed
+
+- Discovery rate limiter no longer triggers when parent requests own children (#237)
+- Child nickname is validated and trimmed on creation (#236)
+
 ## [v0.10.3] - 2026-06-09 — OTP Error Details & Dependencies
 
 ### Fixed
