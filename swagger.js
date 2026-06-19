@@ -2,7 +2,7 @@ const swaggerAutogen = require('swagger-autogen')();
 
 const doc = {
     info: {
-        version: '0.10.0',
+        version: '0.11.0',
         title: 'SiSMoChat API',
         description: 'API for SiSMoChat - A secure chat application focused on child safety with parental control.'
     },
@@ -52,11 +52,11 @@ const outputFile = './swagger_output.json';
 // Mount map mirrors app.js: v1.use('/mount/', require('./routes/file.js'))
 const mounts = [
     { prefix: '/auth', file: './routes/auth.js' },
-    { prefix: '/parent', file: './routes/parent.js' },
-    { prefix: '/user', file: './routes/user.js' },
-    { prefix: '/message', file: './routes/message.js' },
-    { prefix: '/connection', file: './routes/connection.js' },
-    { prefix: '/device', file: './routes/device.js' },
+    { prefix: '/parents', file: './routes/parent.js' },
+    { prefix: '/users', file: './routes/user.js' },
+    { prefix: '/messages', file: './routes/message.js' },
+    { prefix: '/connections', file: './routes/connection.js' },
+    { prefix: '/devices', file: './routes/device.js' },
     { prefix: '/assets', file: './routes/assets.js' },
     { prefix: '/sync', file: './routes/sync.js' },
     { prefix: '/status', file: './routes/status.js' }
