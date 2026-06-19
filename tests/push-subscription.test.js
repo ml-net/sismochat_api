@@ -24,7 +24,7 @@ describe('Push subscription endpoint', () => {
 
   it('PUT with valid subscription should return 200', async () => {
     const res = await request(app)
-      .put(`/api/v1/device/${deviceId}/push-subscription`)
+      .put(`/api/v1/devices/${deviceId}/push-subscription`)
       .set('Authorization', `Bearer ${parentToken}`)
       .send({ subscription: validSubscription });
     expect(res.status).toBe(200);
@@ -34,7 +34,7 @@ describe('Push subscription endpoint', () => {
 
   it('PUT without subscription should return 400', async () => {
     await request(app)
-      .put(`/api/v1/device/${deviceId}/push-subscription`)
+      .put(`/api/v1/devices/${deviceId}/push-subscription`)
       .set('Authorization', `Bearer ${parentToken}`)
       .send({})
       .expect(400);
@@ -42,7 +42,7 @@ describe('Push subscription endpoint', () => {
 
   it('PUT with invalid subscription (missing keys) should return 400', async () => {
     await request(app)
-      .put(`/api/v1/device/${deviceId}/push-subscription`)
+      .put(`/api/v1/devices/${deviceId}/push-subscription`)
       .set('Authorization', `Bearer ${parentToken}`)
       .send({ subscription: { endpoint: 'https://example.com' } })
       .expect(400);
@@ -50,7 +50,7 @@ describe('Push subscription endpoint', () => {
 
   it('PUT on non-existent device should return 404', async () => {
     await request(app)
-      .put('/api/v1/device/non-existent-id/push-subscription')
+      .put('/api/v1/devices/non-existent-id/push-subscription')
       .set('Authorization', `Bearer ${parentToken}`)
       .send({ subscription: validSubscription })
       .expect(404);
@@ -60,7 +60,7 @@ describe('Push subscription endpoint', () => {
     const otherParent = await db.parents.create({ email: 'other-push@test.com', pwd: '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012' });
     const otherToken = jwt.sign({ user: otherParent.id, profile: 'Parent' }, secret);
     await request(app)
-      .put(`/api/v1/device/${deviceId}/push-subscription`)
+      .put(`/api/v1/devices/${deviceId}/push-subscription`)
       .set('Authorization', `Bearer ${otherToken}`)
       .send({ subscription: validSubscription })
       .expect(403);
@@ -68,7 +68,7 @@ describe('Push subscription endpoint', () => {
 
   it('PUT without auth should return 401', async () => {
     await request(app)
-      .put(`/api/v1/device/${deviceId}/push-subscription`)
+      .put(`/api/v1/devices/${deviceId}/push-subscription`)
       .send({ subscription: validSubscription })
       .expect(401);
   });

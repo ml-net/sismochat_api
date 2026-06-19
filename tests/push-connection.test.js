@@ -43,7 +43,7 @@ describe('Push notification on connection events', () => {
 
   it('should send push to recipient parent on connection request', async () => {
     await request(app)
-      .post(`/api/v1/connection/${childAId}/${childBId}`)
+      .post(`/api/v1/connections/${childAId}/${childBId}`)
       .set('Authorization', `Bearer ${parentAToken}`)
       .expect(201);
     expect(sendPush).toHaveBeenCalledWith(
@@ -55,7 +55,7 @@ describe('Push notification on connection events', () => {
   it('should send push to requester parent on connection accepted', async () => {
     const conn = await db.connections.findOne({ where: { from: childAId, to: childBId } });
     await request(app)
-      .patch(`/api/v1/connection/${conn.id}`)
+      .patch(`/api/v1/connections/${conn.id}`)
       .set('Authorization', `Bearer ${parentBToken}`)
       .send({ status: util.ConnectionStatus.ACCEPTED })
       .expect(200);
@@ -70,7 +70,7 @@ describe('Push notification on connection events', () => {
     await db.connections.create({ from: childBId, to: childAId, status: util.ConnectionStatus.REQUESTED });
     const conn = await db.connections.findOne({ where: { from: childBId, to: childAId, status: util.ConnectionStatus.REQUESTED } });
     await request(app)
-      .patch(`/api/v1/connection/${conn.id}`)
+      .patch(`/api/v1/connections/${conn.id}`)
       .set('Authorization', `Bearer ${parentAToken}`)
       .send({ status: util.ConnectionStatus.REJECTED })
       .expect(204);

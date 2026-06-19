@@ -45,7 +45,12 @@ router.get('/sent/:parent', authenticate, authorize('Parent'), async (req, res) 
     const children = await util.getUserByParent(req.user.user);
     const fromList = children.map(u => u.id);
     const requests = await db.connections.findAll({ where: { from: fromList } });
-    res.status(200).send(requests.map(r => ({ id: r.id, from: r.from, to: r.to, status: r.status })));
+    const results = await Promise.all(requests.map(async r => {
+        const fromUser = await db.users.findByPk(r.from);
+        const toUser = await db.users.findByPk(r.to);
+        return { id: r.id, from: r.from, to: r.to, status: r.status, fromNick: fromUser?.nick || null, toNick: toUser?.nick || null };
+    }));
+    res.status(200).send(results);
 });
 
 // Pending approval list (by parent)
@@ -61,7 +66,12 @@ router.get('/approvalList/:parent', authenticate, authorize('Parent'), async (re
     const list = await util.getUserByParent(req.user.user);
     const toList = list.map(u => u.id);
     const cList = await db.connections.findAll({ where: { status: util.ConnectionStatus.REQUESTED, to: toList } });
-    res.status(200).send(cList.map(c => c.dataValues));
+    const results = await Promise.all(cList.map(async c => {
+        const fromUser = await db.users.findByPk(c.from);
+        const toUser = await db.users.findByPk(c.to);
+        return { id: c.id, from: c.from, to: c.to, status: c.status, fromNick: fromUser?.nick || null, toNick: toUser?.nick || null };
+    }));
+    res.status(200).send(results);
 });
 
 // Connection list for user, requested by parent

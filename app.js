@@ -34,11 +34,11 @@ app.use(express.json({ limit: '1mb' }));
 // API v1 router
 const v1 = express.Router();
 v1.use('/auth/', authLimiter, require('./routes/auth.js'));
-v1.use('/parent/', require('./routes/parent.js'));
-v1.use('/user/', require('./routes/user.js'));
-v1.use('/message/', require('./routes/message.js'));
-v1.use('/connection/', require('./routes/connection.js'));
-v1.use('/device/', require('./routes/device.js'));
+v1.use('/parents/', require('./routes/parent.js'));
+v1.use('/users/', require('./routes/user.js'));
+v1.use('/messages/', require('./routes/message.js'));
+v1.use('/connections/', require('./routes/connection.js'));
+v1.use('/devices/', require('./routes/device.js'));
 v1.use('/assets/', require('./routes/assets.js'));
 v1.use('/sync/', require('./routes/sync.js'));
 v1.use('/status/', require('./routes/status.js'));

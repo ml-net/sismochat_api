@@ -13,13 +13,13 @@ const testParent = { email: 'reset@test.com', pwd: 'password123' };
 
 describe('Password Reset', () => {
     beforeAll(async () => {
-        await request(app).post('/api/v1/parent').send(testParent).expect(201);
+        await request(app).post('/api/v1/parents').send(testParent).expect(201);
     });
 
-    describe('POST /api/v1/parent/reset-request', () => {
+    describe('POST /api/v1/parents/reset-request', () => {
         it('should return 200 and send OTP for existing email', async () => {
             const res = await request(app)
-                .post('/api/v1/parent/reset-request')
+                .post('/api/v1/parents/reset-request')
                 .send({ email: testParent.email })
                 .expect(200);
 
@@ -29,7 +29,7 @@ describe('Password Reset', () => {
 
         it('should return 200 even for non-existing email (no leak)', async () => {
             const res = await request(app)
-                .post('/api/v1/parent/reset-request')
+                .post('/api/v1/parents/reset-request')
                 .send({ email: 'nobody@test.com' })
                 .expect(200);
 
@@ -38,13 +38,13 @@ describe('Password Reset', () => {
 
         it('should return 400 for invalid email', async () => {
             await request(app)
-                .post('/api/v1/parent/reset-request')
+                .post('/api/v1/parents/reset-request')
                 .send({ email: 'notanemail' })
                 .expect(400);
         });
     });
 
-    describe('POST /api/v1/parent/reset', () => {
+    describe('POST /api/v1/parents/reset', () => {
         let validOtp;
 
         beforeEach(async () => {
@@ -60,7 +60,7 @@ describe('Password Reset', () => {
 
         it('should reset password with valid OTP', async () => {
             await request(app)
-                .post('/api/v1/parent/reset')
+                .post('/api/v1/parents/reset')
                 .send({ email: testParent.email, otp: validOtp, newPassword: 'newpass123' })
                 .expect(204);
 
@@ -74,7 +74,7 @@ describe('Password Reset', () => {
 
         it('should reject invalid OTP and decrement attempts', async () => {
             const res = await request(app)
-                .post('/api/v1/parent/reset')
+                .post('/api/v1/parents/reset')
                 .send({ email: testParent.email, otp: '000000', newPassword: 'newpass123' })
                 .expect(400);
 
@@ -89,7 +89,7 @@ describe('Password Reset', () => {
             );
 
             const res = await request(app)
-                .post('/api/v1/parent/reset')
+                .post('/api/v1/parents/reset')
                 .send({ email: testParent.email, otp: validOtp, newPassword: 'newpass123' })
                 .expect(400);
 
@@ -103,7 +103,7 @@ describe('Password Reset', () => {
             );
 
             const res = await request(app)
-                .post('/api/v1/parent/reset')
+                .post('/api/v1/parents/reset')
                 .send({ email: testParent.email, otp: validOtp, newPassword: 'newpass123' })
                 .expect(400);
 
@@ -117,7 +117,7 @@ describe('Password Reset', () => {
             );
 
             await request(app)
-                .post('/api/v1/parent/reset')
+                .post('/api/v1/parents/reset')
                 .send({ email: testParent.email, otp: '123456', newPassword: 'newpass123' })
                 .expect(400);
         });

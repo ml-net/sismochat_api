@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.10.0",
+    "version": "0.11.0",
     "title": "SiSMoChat API",
     "description": "API for SiSMoChat - A secure chat application focused on child safety with parental control."
   },
@@ -120,7 +120,7 @@
         }
       }
     },
-    "/parent/": {
+    "/parents/": {
       "post": {
         "tags": [
           "Messages"
@@ -164,7 +164,7 @@
         ]
       }
     },
-    "/parent/password": {
+    "/parents/password": {
       "patch": {
         "tags": [
           "Parents"
@@ -212,7 +212,7 @@
         ]
       }
     },
-    "/parent/me/connections/sent": {
+    "/parents/me/connections/sent": {
       "get": {
         "tags": [
           "Parents"
@@ -237,7 +237,7 @@
         ]
       }
     },
-    "/parent/me/connections/pending": {
+    "/parents/me/connections/pending": {
       "get": {
         "tags": [
           "Parents"
@@ -262,7 +262,7 @@
         ]
       }
     },
-    "/parent/{email}/children": {
+    "/parents/{email}/children": {
       "get": {
         "tags": [
           "Parents"
@@ -298,7 +298,7 @@
         ]
       }
     },
-    "/parent/{email}": {
+    "/parents/{email}": {
       "get": {
         "tags": [
           "Parents"
@@ -334,7 +334,7 @@
         ]
       }
     },
-    "/parent/reset-request": {
+    "/parents/reset-request": {
       "post": {
         "tags": [
           "Parents"
@@ -365,7 +365,7 @@
         }
       }
     },
-    "/parent/reset": {
+    "/parents/reset": {
       "post": {
         "tags": [
           "Parents"
@@ -402,7 +402,7 @@
         }
       }
     },
-    "/user/": {
+    "/users/": {
       "post": {
         "tags": [
           "Messages"
@@ -446,7 +446,7 @@
         ]
       }
     },
-    "/user/{userid}": {
+    "/users/{userid}": {
       "get": {
         "tags": [
           "Users"
@@ -562,7 +562,7 @@
         ]
       }
     },
-    "/user/pubkey/{userid}": {
+    "/users/pubkey/{userid}": {
       "get": {
         "tags": [
           "Users"
@@ -595,7 +595,7 @@
         ]
       }
     },
-    "/message/list/{msgStatus}": {
+    "/messages/list/{msgStatus}": {
       "get": {
         "tags": [
           "Messages"
@@ -644,7 +644,7 @@
         ]
       }
     },
-    "/message/{msgID}": {
+    "/messages/{msgID}": {
       "get": {
         "tags": [
           "Messages"
@@ -714,7 +714,7 @@
         ]
       }
     },
-    "/message/": {
+    "/messages/": {
       "post": {
         "tags": [
           "Messages"
@@ -758,7 +758,7 @@
         ]
       }
     },
-    "/connection/": {
+    "/connections/": {
       "get": {
         "tags": [
           "Status"
@@ -778,7 +778,7 @@
         }
       }
     },
-    "/connection/sent/{parent}": {
+    "/connections/sent/{parent}": {
       "get": {
         "tags": [
           "Connections"
@@ -811,7 +811,7 @@
         ]
       }
     },
-    "/connection/approvalList/{parent}": {
+    "/connections/approvalList/{parent}": {
       "get": {
         "tags": [
           "Connections"
@@ -844,7 +844,7 @@
         ]
       }
     },
-    "/connection/{user}": {
+    "/connections/{user}": {
       "get": {
         "tags": [
           "Connections"
@@ -889,7 +889,7 @@
         ]
       }
     },
-    "/connection/{from}/{to}": {
+    "/connections/{from}/{to}": {
       "post": {
         "tags": [
           "Connections"
@@ -931,7 +931,7 @@
         ]
       }
     },
-    "/connection/{connid}": {
+    "/connections/{connid}": {
       "patch": {
         "tags": [
           "Connections"
@@ -1015,7 +1015,7 @@
         ]
       }
     },
-    "/device/{userid}": {
+    "/devices/{userid}": {
       "post": {
         "tags": [
           "Devices"
@@ -1134,7 +1134,7 @@
         ]
       }
     },
-    "/device/{deviceId}/push-subscription": {
+    "/devices/{deviceId}/push-subscription": {
       "put": {
         "tags": [
           "Devices"

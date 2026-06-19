@@ -37,7 +37,7 @@ describe('Push notification on new message', () => {
 
   it('should send push notification when recipient has subscription', async () => {
     await request(app)
-      .post('/api/v1/message')
+      .post('/api/v1/messages')
       .set('Authorization', `Bearer ${senderToken}`)
       .send({ to: receiverId, message: 'hello' })
       .expect(201);
@@ -50,7 +50,7 @@ describe('Push notification on new message', () => {
   it('should not send push when recipient has no subscription', async () => {
     await db.devices.update({ pushSubscription: null }, { where: { id: deviceId } });
     await request(app)
-      .post('/api/v1/message')
+      .post('/api/v1/messages')
       .set('Authorization', `Bearer ${senderToken}`)
       .send({ to: receiverId, message: 'hello again' })
       .expect(201);
@@ -62,7 +62,7 @@ describe('Push notification on new message', () => {
     await db.devices.update({ pushSubscription: sub }, { where: { id: deviceId } });
     sendPush.mockRejectedValueOnce({ statusCode: 410 });
     await request(app)
-      .post('/api/v1/message')
+      .post('/api/v1/messages')
       .set('Authorization', `Bearer ${senderToken}`)
       .send({ to: receiverId, message: 'expired test' })
       .expect(201);
