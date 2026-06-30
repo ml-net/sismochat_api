@@ -30,6 +30,11 @@ On new message:
 3. Client in foreground: suppress push display (avoid double notification)
 4. Client in background: push shows as system notification
 
+On message downloaded (recipient fetches via GET /messages/:msgID):
+1. Server marks message as DOWNLOADED (status=1)
+2. WS notification to sender: `{ type: 'message_downloaded', msgId }` (delivery confirmation)
+3. Sender client updates message status UI (single ✓ → double ✓✓)
+
 ### Subscription lifecycle
 
 - Client registers push subscription on login

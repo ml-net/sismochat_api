@@ -57,6 +57,7 @@ router.get("/:msgID", authenticate, authorize('User'), async (req, res) => {
         // Mark as downloaded before sending response
         if (msg.to == req.user.user && msg.status == util.MessageStatus.UNREAD) {
             await msg.update({ status: util.MessageStatus.DOWNLOADED });
+            notify(msg.from, { type: 'message_downloaded', msgId: msg.id });
         }
         res.status(200).send(msg.dataValues);
     } else {
