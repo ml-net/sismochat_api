@@ -14,21 +14,26 @@ async function parentAuth(email, pwd) {
 async function userAuth(usertoken) {
     const userid = util.atob(usertoken[0]);
     const deviceId = util.atob(usertoken[1]).trim();
-    const encrDevice = usertoken[2].replace(/ /g, '+');
+    const signature = usertoken[2].replace(/ /g, '+');
 
     const u = await db.users.findByPk(userid);
     if (!u) {
         return { errCode: 3, errDesc: "User unknown" };
     }
 
-    let decryptDeviceId;
+    let verified;
     try {
-        decryptDeviceId = util.pubDecode(encrDevice, u.key).replace('\n', '');
+        verified = require('crypto').verify(
+            'sha256',
+            Buffer.from(deviceId),
+            { key: u.key, padding: require('crypto').constants.RSA_PKCS1_PADDING },
+            Buffer.from(signature, 'base64')
+        );
     } catch (e) {
         return { errCode: 6, errDesc: "Token not valid" };
     }
 
-    if (decryptDeviceId != deviceId) {
+    if (!verified) {
         return { errCode: 6, errDesc: "Token not valid" };
     }
 
