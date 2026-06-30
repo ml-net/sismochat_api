@@ -449,8 +449,8 @@ describe('User endpoint', () => {
     });
 
     it('Get JWT Tokens by user auth should return 200', () => {
-        let token1 = util.btoa(id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
-        let token2 = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv2);
+        let token1 = util.btoa(id1) + '.' + util.btoa(deviceId1) + '.' + util.signDevice(deviceId1, pv1);
+        let token2 = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.signDevice(deviceId2, pv2);
         return (
             request(app)
                 .post('/api/v1/auth/user')
@@ -475,7 +475,7 @@ describe('User endpoint', () => {
     });
 
     it('Perform user auth with unknown user should return 401', () => {
-        let token = util.btoa('s' + id1) + '.' + util.btoa(deviceId1) + '.' + util.privEncode(deviceId1, pv1);
+        let token = util.btoa('s' + id1) + '.' + util.btoa(deviceId1) + '.' + util.signDevice(deviceId1, pv1);
         return (
             request(app)
                 .post('/api/v1/auth/user')
@@ -490,7 +490,7 @@ describe('User endpoint', () => {
     });
 
     it('Perform user auth with invalid token should return 401', () => {
-        let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId1, pv2);
+        let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.signDevice(deviceId1, pv2);
         return (
             request(app)
                 .post('/api/v1/auth/user')
@@ -506,7 +506,7 @@ describe('User endpoint', () => {
 
     it('Perform user auth with wrong device should return 401 with errCode 8', () => {
         // Use id1's credentials but with id2's device
-        let token = util.btoa(id1) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv1);
+        let token = util.btoa(id1) + '.' + util.btoa(deviceId2) + '.' + util.signDevice(deviceId2, pv1);
         return (
             request(app)
                 .post('/api/v1/auth/user')
@@ -536,7 +536,7 @@ describe('User endpoint', () => {
     });
 
     it('Perform user auth without device should return 401 with errCode 14', () => {
-        let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.privEncode(deviceId2, pv2);
+        let token = util.btoa(id2) + '.' + util.btoa(deviceId2) + '.' + util.signDevice(deviceId2, pv2);
         return (
             request(app)
                 .post('/api/v1/auth/user')

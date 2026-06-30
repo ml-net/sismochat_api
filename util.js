@@ -84,6 +84,14 @@ let util = {
 
     atob: function (b64) {
         return Buffer.from(b64, 'base64').toString();
+    },
+
+    signDevice: function (data, privateKey) {
+        const crypto = require('crypto');
+        const sign = crypto.createSign('SHA256');
+        sign.update(data);
+        sign.end();
+        return sign.sign({ key: privateKey, passphrase: '', padding: crypto.constants.RSA_PKCS1_PADDING }, 'base64');
     }
 }
 
