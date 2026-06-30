@@ -4,6 +4,23 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.11.1] - 2026-06-30 — Device Auth & Delivery Notifications
+
+### Changed
+
+- Device authentication now uses `crypto.verify` (RSASSA-PKCS1-v1_5 + SHA-256) instead of `publicDecrypt` — enables Web Crypto API compatibility on client (#246)
+- ADR 014: documents device authentication signature scheme
+
+### Added
+
+- WebSocket `message_downloaded` event: sender is notified when recipient downloads a message (ADR 013 updated)
+- `util.signDevice` helper for test token generation
+
+### Breaking
+
+- Device auth tokens must use RSASSA-PKCS1-v1_5 signature (old `privateEncrypt` tokens no longer valid)
+- Requires client v0.4.0+
+
 ## [v0.11.0] - 2026-06-19 — Pluralized Paths & Connection Enrichment
 
 ### Changed
