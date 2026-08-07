@@ -4,6 +4,30 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.11.2] - 2026-08-07 — Dependency Maintenance
+
+### Changed
+
+- Bump actions/checkout from v6 to v7 (#241)
+- Bump actions/setup-node from v6 to v7 (#256)
+- Bump ws from 8.21.0 to 8.21.1 (#257)
+- Bump helmet from 8.2.0 to 8.3.0 (#258)
+- Bump express-rate-limit from 8.5.2 to 8.6.0 (#259)
+- Bump body-parser from 2.2.2 to 2.3.0 (#260)
+- Bump tar from 7.5.15 to 7.5.22 (#262)
+- Bump undici from 6.25.0 to 6.28.0 (#263)
+- Bump ip-address from 10.2.0 to 10.4.0 (#264)
+- Bump fast-uri from 3.1.2 to 3.1.5 (#265)
+- Bump brace-expansion from 1.1.14 to 1.1.18 (#266)
+- Bump form-data from 4.0.5 to 4.0.6 (#243)
+- Bump resend from 6.12.4 to 6.17.2 (#253)
+- Bump @commitlint/config-conventional from 21.0.1 to 21.2.0 (#252)
+- Bump @commitlint/cli from 21.0.2 to 21.2.1 (#267)
+
+### Notes
+
+- ESLint 8→10 upgrade (#255) deferred — blocked by ESM migration (#192)
+
 ## [v0.11.1] - 2026-06-30 — Device Auth & Delivery Notifications
 
 ### Changed
