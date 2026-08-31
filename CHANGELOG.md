@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.11.3] - 2026-08-31 — Dependency Maintenance
+
+### Changed
+
+- Bump express-rate-limit from 8.6.0 to 8.6.2 (#270)
+- Bump ws from 8.21.1 to 8.21.3 (#273)
+- Bump @commitlint/cli from 21.2.1 to 21.2.2 (#276)
+- Bump @commitlint/config-conventional from 21.2.0 to 21.2.2 (#277)
+- Bump resend from 6.17.2 to 6.24.0 (#279)
+
+### Notes
+
+- ESLint 8→10 upgrade (#280) still deferred — blocked by ESM migration (#192)
+
 ## [v0.11.2] - 2026-08-07 — Dependency Maintenance
 
 ### Changed
